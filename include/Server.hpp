@@ -6,7 +6,6 @@
 #include <iostream>
 #include <map>
 
-
 class Client;
 class Channel;
 
@@ -30,6 +29,9 @@ class Server
         // void removeClient(int fd);
 
         // void addChannel(Channel* channel);
+
+        void handleCommand(Client* client, const std::string& commandLine);
+
 };
 
 #endif
