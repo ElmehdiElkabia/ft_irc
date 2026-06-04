@@ -1,0 +1,36 @@
+#ifndef CHANNEL_HPP
+#define CHANNEL_HPP
+
+
+#include <vector>
+#include "Client.hpp"
+#include <iostream>
+
+class Client;
+
+class Channel
+{
+    private:
+        std::string          name;
+        std::string          topic;
+        std::vector<Client*> members;
+        std::vector<Client*> operators;
+
+    public:
+        Channel();
+        Channel(const std::string& name);
+        ~Channel();
+
+        const std::string& getName() const;
+        const std::string& getTopic() const;
+
+        void setTopic(const std::string& topic);
+
+        // void addMember(Client* client);
+        // void removeMember(Client* client);
+
+        // bool isMember(Client* client) const;
+        // bool isOperator(Client* client) const;
+};
+
+#endif
