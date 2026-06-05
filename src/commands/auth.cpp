@@ -4,7 +4,7 @@ void Server::passCommand(Client *client, const std::vector<std::string> &params)
 {
     if (params.size() != 1)
     {
-        std::cerr << "Usage: PASS <password>" << std::endl;
+        std::cerr << "Invalid number of parameters for PASS command." << std::endl;
         return;
     }
     if (client->hasPassed())
@@ -25,3 +25,4 @@ void Server::passCommand(Client *client, const std::vector<std::string> &params)
     }
     client->setPassAccepted(true);
 }
+
