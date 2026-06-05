@@ -11,6 +11,16 @@ Server::~Server()
 }
 
 
+Client* Server::getClientByNick(const std::string& nick)
+{
+    for (std::map<int, Client *>::iterator it = clients.begin(); it != clients.end(); ++it)
+    {
+        if (it->second->getNickname() == nick)
+            return it->second;
+    }
+    return nullptr;
+}
+
 
 void Server::handleCommand(Client* client, const std::string& commandLine)
 {
