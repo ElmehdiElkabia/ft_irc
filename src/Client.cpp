@@ -2,16 +2,16 @@
 
 
 Client::Client() :
-    _fd(-1),
-    _passAccepted(false),
-    _registered(false)
+    fd(-1),
+    passAccepted(false),
+    registered(false)
 {
 }
 
 Client::Client(int fd) :
-    _fd(fd),
-    _passAccepted(false),
-    _registered(false)
+    fd(fd),
+    passAccepted(false),
+    registered(false)
 {
 }
 
@@ -21,45 +21,45 @@ Client::~Client()
 
 int Client::getFd() const
 {
-    return _fd;
+    return fd;
 }
 
 const std::string& Client::getNickname() const
 {
-    return _nickname;
+    return nickname;
 }
 
 const std::string& Client::getUsername() const
 {
-    return _username;
+    return username;
 }
 
 void Client::setNickname(const std::string& nick)
 {
-    _nickname = nick;
+    nickname = nick;
 }
 
 void Client::setUsername(const std::string& user)
 {
-    _username = user;
+    username = user;
 }
 
 bool Client::isRegistered() const
 {
-    return _registered;
+    return registered;
 }
 
 bool Client::hasPassed() const
 {
-    return _passAccepted;
+    return passAccepted;
 }
 
 void Client::setPassAccepted(bool value)
 {
-    _passAccepted = value;
+    passAccepted = value;
 }
 
 void Client::setRegistered(bool value)
 {
-    _registered = value;
+    registered = value;
 }

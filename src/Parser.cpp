@@ -1,11 +1,8 @@
 #include "../include/Command.hpp"
 
-
-
-
-Command parseCommand(const std::string& commandLine)
+Command parseCommand(const std::string &commandLine)
 {
-    command cmd;
+    Command cmd;
 
-    
+    return cmd;
 }

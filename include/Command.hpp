@@ -2,12 +2,13 @@
 #define COMMAND_HPP
 
 #include <vector>
+#include <iostream>
 
 struct Command
 {
     std::string command;
     std::vector<std::string> params;
-}
+};
 
 
 
