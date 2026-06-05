@@ -4,6 +4,7 @@
 
 Server::Server()
 {
+    this->password = "secret";
 }
 
 Server::~Server()
@@ -18,7 +19,7 @@ Client* Server::getClientByNick(const std::string& nick)
         if (it->second->getNickname() == nick)
             return it->second;
     }
-    return nullptr;
+    return NULL;
 }
 
 
