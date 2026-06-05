@@ -11,27 +11,30 @@ class Channel;
 
 class Server
 {
-    private:
-        std::map<int, Client*>             clients;
-        std::map<std::string, Channel*>    channels;
-        std::string                        password;
+private:
+    std::map<int, Client *> clients;
+    std::map<std::string, Channel *> channels;
+    std::string password;
 
-    public:
-        Server();
-        ~Server();
+public:
+    Server();
+    ~Server();
 
-        // Client* getClient(int fd);
-        // Client* getClientByNick(const std::string& nick);
+    // Client* getClient(int fd);
+    // Client* getClientByNick(const std::string& nick);
 
-        // Channel* getChannel(const std::string& name);
+    // Channel* getChannel(const std::string& name);
 
-        // void addClient(Client* client);
-        // void removeClient(int fd);
+    // void addClient(Client* client);
+    // void removeClient(int fd);
 
-        // void addChannel(Channel* channel);
+    // void addChannel(Channel* channel);
 
-        void handleCommand(Client* client, const std::string& commandLine);
-
+    void handleCommand(Client *client, const std::string &commandLine);
+    void passCommand(Client *client, const std::vector<std::string> &params);
+    void nickCommand(Client *client, const std::vector<std::string> &params);
+    void userCommand(Client *client, const std::vector<std::string> &params);
+    
 };
 
 #endif
