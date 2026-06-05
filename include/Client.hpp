@@ -11,6 +11,7 @@ class Client
         int         fd;
         std::string nickname;
         std::string username;
+        std::string realname;
         bool        passAccepted;
         bool        registered;
 
@@ -29,6 +30,7 @@ class Client
 
         void setNickname(const std::string& nick);
         void setUsername(const std::string& user);
+        void setRealname(const std::string& real);
         void setPassAccepted(bool value);
         void setRegistered(bool value);
 };
