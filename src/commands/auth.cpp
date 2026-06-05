@@ -20,6 +20,15 @@ static bool isValidNickname(const std::string &nick)
     return true;
 }
 
+static void checkRegistration(Client *client)
+{
+    if (client->hasPassed() && !client->getNickname().empty() && !client->getUsername().empty())
+    {
+        client->setRegistered(true);
+        std::cout << "Client " << client->getNickname() << " has registered successfully." << std::endl;
+    }
+}
+
 void Server::passCommand(Client *client, const std::vector<std::string> &params)
 {
     if (params.size() != 1)
@@ -44,6 +53,7 @@ void Server::passCommand(Client *client, const std::vector<std::string> &params)
         return;
     }
     client->setPassAccepted(true);
+    checkRegistration(client);
 }
 
 void Server::nickCommand(Client *client, const std::vector<std::string> &params)
@@ -70,5 +80,34 @@ void Server::nickCommand(Client *client, const std::vector<std::string> &params)
         return;
     }
     client->setNickname(nickname);
+    checkRegistration(client);
 }
 
+void Server::userCommand(Client *client, const std::vector<std::string> &params)
+{
+    if (params.size() != 4)
+    {
+        std::cerr << "Invalid number of parameters for USER command." << std::endl;
+        return;
+    }
+    if (!client->hasPassed())
+    {
+        std::cerr << "You must enter the password first." << std::endl;
+        return;
+    }
+    if (!client->getUsername().empty())
+    {
+        std::cerr << "You must set a nickname first." << std::endl;
+        return;
+    }
+    std::string username = params[0];
+    if (username.empty())
+    {
+        std::cerr << "Username cannot be empty." << std::endl;
+        return;
+    }
+    client->setUsername(username);
+    client->setRealname(params[3]);
+    client->setRegistered(true);
+    checkRegistration(client);
+}
