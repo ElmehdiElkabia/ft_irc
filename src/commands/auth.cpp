@@ -1,4 +1,4 @@
-#include "../include/Server.hpp"
+#include "../../include/Server.hpp"
 
 bool isSpecial(char c)
 {
@@ -74,7 +74,7 @@ void Server::nickCommand(Client *client, const std::vector<std::string> &params)
         std::cerr << "Invalid nickname." << std::endl;
         return;
     }
-    if (getClientByNick(nickname) != nullptr)
+    if (getClientByNick(nickname) != NULL)
     {
         std::cerr << "Nickname is already in use." << std::endl;
         return;
