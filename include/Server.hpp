@@ -2,6 +2,7 @@
 
 #include "Client.hpp"
 #include <iostream>
+#include <cstring>
 #include <vector> //-> for vector
 #include <sys/socket.h> //-> for socket()
 #include <sys/types.h> //-> for socket()
