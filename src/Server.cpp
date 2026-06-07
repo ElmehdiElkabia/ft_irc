@@ -1,4 +1,6 @@
 #include "Server.hpp"
+#include <cerrno>
+#include <cctype>
 
 
 bool Server::Signal = false; //-> initialize the static boolean
@@ -13,9 +15,62 @@ void Server::CloseFds() {
 		std::cout << RED << "Client <" << clients[i].GetFd() << "> Disconnected" << WHI << std::endl;
 		close(clients[i].GetFd());
 	}
+	clients.clear();
+	clientBuffers.clear();
+	fds.clear();
 	if (SerSocketFd != -1) { //-> close the server socket
 		std::cout << RED << "Server <" << SerSocketFd << "> Disconnected" << WHI << std::endl;
 		close(SerSocketFd);
+		SerSocketFd = -1;
+	}
+}
+
+Client *Server::FindClient(int fd) {
+	for (size_t i = 0; i < clients.size(); ++i) {
+		if (clients[i].GetFd() == fd)
+			return &clients[i];
+	}
+	return 0;
+}
+
+void Server::DispatchCommand(int fd, const std::string &line) {
+	if (line.empty())
+		return;
+
+	std::string commandLine = line;
+	if (commandLine[0] == ':') {
+		size_t prefixEnd = commandLine.find(' ');
+		if (prefixEnd == std::string::npos)
+			return;
+		commandLine = commandLine.substr(prefixEnd + 1);
+	}
+
+	size_t commandEnd = commandLine.find(' ');
+	std::string command = commandLine.substr(0, commandEnd);
+	for (size_t i = 0; i < command.size(); ++i)
+		command[i] = static_cast<char>(std::toupper(static_cast<unsigned char>(command[i])));
+
+	std::string params;
+	if (commandEnd != std::string::npos)
+		params = commandLine.substr(commandEnd + 1);
+
+	if (!FindClient(fd))
+		return;
+
+	std::cout << YEL << "Client <" << fd << "> Command: " << WHI << command;
+	if (!params.empty())
+		std::cout << " | Args: " << params;
+	std::cout << std::endl;
+}
+
+void Server::ProcessBuffer(int fd) {
+	std::string &buffer = clientBuffers[fd];
+	size_t lineEnd = std::string::npos;
+
+	while ((lineEnd = buffer.find("\r\n")) != std::string::npos) {
+		std::string line = buffer.substr(0, lineEnd);
+		buffer.erase(0, lineEnd + 2);
+		DispatchCommand(fd, line);
 	}
 }
 
@@ -60,6 +115,7 @@ void Server::AcceptNewClient() {
 
 	if (fcntl(incofd, F_SETFL, O_NONBLOCK) == -1) { //-> set the socket option (O_NONBLOCK) for non-blocking socket 
 		std::cout << "fcntl() failed" << std::endl;
+		close(incofd);
 		return;
 	}
 
@@ -80,17 +136,24 @@ void Server::ReceiveNewData(int fd) {
 	memset(buff, 0, sizeof(buff)); //-> clear the buffer
 
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0); //-> receive the data
+	if (bytes < 0) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return;
+		std::cout << RED << "Client <" << fd << "> Disconnected" << WHI << std::endl;
+		ClearClients(fd);
+		return;
+	}
 
 	if(bytes <= 0) { //-> check if the client disconnected
 		std::cout << RED << "Client <" << fd << "> Disconnected" << WHI << std::endl;
 		ClearClients(fd); //-> clear the client
-		close(fd); //-> close the client socket
+		return;
 	}
 
 	else { //-> print the received data
 		buff[bytes] = '\0';
-		std::cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
-		//here you can add your code to process the received data: parse, check, authenticate, handle the command, etc...
+		clientBuffers[fd].append(buff, static_cast<size_t>(bytes));
+		ProcessBuffer(fd);
 	}
 }
 

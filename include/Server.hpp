@@ -3,6 +3,7 @@
 #include "Client.hpp"
 #include <iostream>
 #include <cstring>
+#include <map>
 #include <vector> //-> for vector
 #include <sys/socket.h> //-> for socket()
 #include <sys/types.h> //-> for socket()
@@ -27,6 +28,11 @@ private:
 	static bool Signal; //-> static boolean for signal
 	std::vector<Client> clients; //-> vector of clients
 	std::vector<struct pollfd> fds; //-> vector of pollfd
+	std::map<int, std::string> clientBuffers; //-> per-client input buffers
+
+	Client *FindClient(int fd); //-> find a client by fd
+	void ProcessBuffer(int fd); //-> extract complete IRC lines
+	void DispatchCommand(int fd, const std::string &line); //-> route a parsed line
 public:
 	Server(){SerSocketFd = -1;} //-> default constructor
 
@@ -43,18 +49,19 @@ public:
 
 //-------------------------------------------------------//
 void Server::ClearClients(int fd) { //-> clear the clients
-    close(fd);
+	close(fd);
 	for(size_t i = 0; i < fds.size(); i++) { //-> remove the client from the pollfd
 		if (fds[i].fd == fd) {
-            fds.erase(fds.begin() + i);
-            break;
-        }
+			fds.erase(fds.begin() + i);
+			break;
+		}
 	}
 	for(size_t i = 0; i < clients.size(); i++) { //-> remove the client from the vector of clients
 		if (clients[i].GetFd() == fd) {
 			clients.erase(clients.begin() + i);
-            break;
-        }
+			break;
+		}
 	}
+	clientBuffers.erase(fd);
 }
 
