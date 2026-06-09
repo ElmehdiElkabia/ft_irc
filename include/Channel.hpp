@@ -16,6 +16,13 @@ class Channel
         std::vector<Client*> members;
         std::vector<Client*> operators;
 
+        bool inviteOnly;
+        bool topicRestricted;
+
+        std::string password;
+        
+        size_t userLimit;
+
     public:
         Channel();
         Channel(const std::string& name);
@@ -24,13 +31,19 @@ class Channel
         const std::string& getName() const;
         const std::string& getTopic() const;
 
+        std::vector<Client*>& getMembers();
+        const std::vector<Client*>& getMembers() const;
+
         void setTopic(const std::string& topic);
 
-        // void addMember(Client* client);
-        // void removeMember(Client* client);
 
-        // bool isMember(Client* client) const;
-        // bool isOperator(Client* client) const;
+        void addMember(Client* client);
+        void removeMember(Client* client);
+
+        size_t memberCount() const;
+
+        bool isMember(Client* client) const;
+        bool isOperator(Client* client) const;
 };
 
 #endif
