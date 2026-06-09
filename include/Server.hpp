@@ -23,9 +23,9 @@ public:
     // Client* getClient(int fd);
     Client* getClientByNick(const std::string& nick);
 
-    // Channel* getChannel(const std::string& name);
+    Channel* getChannel(const std::string& name);
 
-    // void addClient(Client* client);
+    void addClient(Client* client);
     // void removeClient(int fd);
 
     // void addChannel(Channel* channel);
@@ -34,6 +34,11 @@ public:
     void passCommand(Client *client, const std::vector<std::string> &params);
     void nickCommand(Client *client, const std::vector<std::string> &params);
     void userCommand(Client *client, const std::vector<std::string> &params);
+    void joinCommand(Client *client, const std::vector<std::string> &params);
+    void partCommand(Client *client, const std::vector<std::string> &params);
+    void quitCommnand(Client *client, const std::vector<std::string> &params);
+    void privmsgCommand(Client *client, const std::vector<std::string> &params);
+    void topicCommand(Client *client, const std::vector<std::string> &params);
     
 };
 
