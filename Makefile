@@ -2,7 +2,7 @@ CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 
 SRCS = src/Server.cpp src/Client.cpp src/Parser.cpp src/Channel.cpp src/main.cpp \
-		src/commands/auth.cpp 
+		src/commands/auth.cpp  src/commands/channel.cpp src/commands/messaging.cpp  src/commands/topic.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
