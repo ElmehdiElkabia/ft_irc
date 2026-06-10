@@ -9,6 +9,7 @@ class Client
 {
     private:
         int         fd;
+        std::string IPadd;
         std::string nickname;
         std::string username;
         std::string realname;
@@ -21,6 +22,9 @@ class Client
         ~Client();
 
         int getFd() const;
+
+        void setFd(int fd){this->fd = fd;}
+        void setIpAdd(std::string ipadd){this->IPadd = ipadd;}
 
         const std::string& getNickname() const;
         const std::string& getUsername() const;

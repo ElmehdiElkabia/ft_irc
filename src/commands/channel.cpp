@@ -5,18 +5,18 @@ void Server::joinCommand(Client *client, const std::vector<std::string> &params)
 
     if (!client->isRegistered())
     {
-        std::cerr << "You must be registered to join a channel." << std::endl;
+        sendToClient(client, "ERROR :You must be registered to join a channel\r\n");
         return;
     }
     if (params.size() != 1)
     {
-        std::cerr << "Invalid number of parameters for JOIN command." << std::endl;
+        sendToClient(client, "ERROR :Invalid number of parameters for JOIN command\r\n");
         return;
     }
     std::string channelName = params[0];
     if (channelName[0] != '#')
     {
-        std::cerr << "Invalid channel name. Channel names must start with '#'." << std::endl;
+        sendToClient(client, "ERROR :Invalid channel name. Channel names must start with '#'.\r\n");
         return;
     }
     Channel *channel = getChannel(channelName);
@@ -27,41 +27,40 @@ void Server::joinCommand(Client *client, const std::vector<std::string> &params)
     }
     if (channel->isMember(client))
     {
-        std::cerr << "You are already a member of channel: " << channelName << std::endl;
+        sendToClient(client, "ERROR :You are already a member of channel: " + channelName + "\r\n");
         return;
     }
     channel->addMember(client);
-    std::cout << "Client " << client->getNickname() << " joined channel " << channelName << "." << std::endl;
-
+    sendToClient(client, "You have joined channel: " + channelName + "\r\n");
 }
 
 void Server::partCommand(Client *client, const std::vector<std::string> &params)
 {
     if (!client->isRegistered())
     {
-        std::cerr << "You must be registered to part a channel." << std::endl;
+        sendToClient(client, "ERROR :You must be registered to part a channel\r\n");
         return;
     }
     if (params.size() != 1)
     {
-        std::cerr << "Invalid number of parameters for PART command." << std::endl;
+        sendToClient(client, "ERROR :Invalid number of parameters for PART command\r\n");
         return;
     }
     std::string channelName = params[0];
     if (channelName[0] != '#')
     {
-        std::cerr << "Invalid channel name. Channel names must start with '#'." << std::endl;
+        sendToClient(client, "ERROR :Invalid channel name. Channel names must start with '#'.\r\n");
         return;
     }
     Channel *channel = getChannel(channelName);
     if (!channel)
     {
-        std::cerr << "No such channel: " << channelName << std::endl;
+        sendToClient(client, "ERROR :No such channel: " + channelName + "\r\n");
         return;
     }
     if (!channel->isMember(client))
     {
-        std::cerr << "You are not a member of channel: " << channelName << std::endl;
+        sendToClient(client, "ERROR :You are not a member of channel: " + channelName + "\r\n");
         return;
     }
     channel->removeMember(client);
@@ -69,13 +68,13 @@ void Server::partCommand(Client *client, const std::vector<std::string> &params)
     {
         delete channel;
         channels.erase(channelName);
-        std::cout << "Channel " << channelName << " has been deleted as it has no more members." << std::endl;
+        sendToClient(client, "Channel " + channelName + " has been deleted as it has no more members.\r\n");
         return;
     }
-    std::cout << "Client " << client->getNickname() << " left channel " << channelName << "." << std::endl;
+    sendToClient(client, "You have left channel: " + channelName + "\r\n");
 }
 
-void Server::quitCommnand(Client *client, const std::vector<std::string> &params)
+void Server::quitCommand(Client *client, const std::vector<std::string> &params)
 {
 
     (void)params;
@@ -85,5 +84,5 @@ void Server::quitCommnand(Client *client, const std::vector<std::string> &params
     // you should close the socket of the client
     // okay a khay abdo
     // rah dart likk koulchii hena
-    std::cout << "Client " << client->getNickname() << " is quitting." << std::endl;
+    sendToClient(client, "You are quitting the IRC server.\r\n");
 }

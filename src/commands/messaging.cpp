@@ -4,12 +4,12 @@ void Server::privmsgCommand(Client *client, const std::vector<std::string> &para
 {
     if (!client->isRegistered())
     {
-        std::cerr << "You must be registered to send a private message." << std::endl;
+        sendToClient(client, "ERROR :You must be registered to send a private message\r\n");
         return;
     }
     if (params.size() < 2)
     {
-        std::cerr << "Invalid number of parameters for PRIVMSG command." << std::endl;
+        sendToClient(client, "ERROR :Invalid number of parameters for PRIVMSG command\r\n");
         return;
     }
     std::string target = params[0];
@@ -19,12 +19,12 @@ void Server::privmsgCommand(Client *client, const std::vector<std::string> &para
         Channel *channel = getChannel(target);
         if (!channel)
         {
-            std::cerr << "No such channel: " << target << std::endl;
+            sendToClient(client, "ERROR :No such channel: " + target + "\r\n");
             return;
         }
         if (!channel->isMember(client))
         {
-            std::cerr << "You are not a member of channel: " << target << std::endl;
+            sendToClient(client, "ERROR :You are not a member of channel: " + target + "\r\n");
             return;
         }
         for (size_t i = 0; i < channel->memberCount(); ++i)
@@ -32,7 +32,7 @@ void Server::privmsgCommand(Client *client, const std::vector<std::string> &para
             Client *member = channel->getMembers()[i];
 
             if (member != client)
-                std::cout << "Sending message to " << member->getNickname() << ": " << message << std::endl;
+                sendToClient(member, "PRIVMSG " + target + " :" + message + "\r\n");
         }
     }
     else
@@ -40,9 +40,9 @@ void Server::privmsgCommand(Client *client, const std::vector<std::string> &para
         Client *targetClient = getClientByNick(target);
         if (!targetClient)
         {
-            std::cerr << "No such user: " << target << std::endl;
+            sendToClient(client, "ERROR :No such user: " + target + "\r\n");
             return;
         }
-        std::cout << "Sending private message to " << targetClient->getNickname() << ": " << message << std::endl;
+        sendToClient(targetClient, "PRIVMSG " + target + " :" + message + "\r\n");
     }
 }

@@ -5,37 +5,37 @@ void Server::topicCommand(Client *client, const std::vector<std::string> &params
 {
     if (!client->isRegistered())
     {
-        std::cerr << "You must be registered to set a topic." << std::endl;
+        sendToClient(client, "ERROR :You must be registered to set or view a topic\r\n");
         return;
     }
     if (params.size() < 1)
     {
-        std::cerr << "Invalid number of parameters for TOPIC command." << std::endl;
+        sendToClient(client, "ERROR :Invalid number of parameters for TOPIC command\r\n");
         return;
     }
     std::string channelName = params[0];
     if (channelName[0] != '#')
     {
-        std::cerr << "Invalid channel name. Channel names must start with '#'." << std::endl;
+        sendToClient(client, "ERROR :Invalid channel name. Channel names must start with '#'.\r\n");
         return;
     }
     Channel *channel = getChannel(channelName);
     if (!channel)
     {
-        std::cerr << "No such channel: " << channelName << std::endl;
+        sendToClient(client, "ERROR :No such channel: " + channelName + "\r\n");
         return;
     }
     if (!channel->isMember(client))
     {
-        std::cerr << "You are not a member of channel: " << channelName << std::endl;
+        sendToClient(client, "ERROR :You are not a member of channel: " + channelName + "\r\n");
         return;
     }
     if (params.size() == 1)
     {
-        std::cout << "Current topic for channel " << channelName << ": " << channel->getTopic() << std::endl;
+        sendToClient(client, "TOPIC " + channelName + " :" + channel->getTopic() + "\r\n");
         return;
     }
     std::string newTopic = params[1];
     channel->setTopic(newTopic);
-    std::cout << "Topic for channel " << channelName << " set to: " << newTopic << std::endl;
+    sendToClient(client, "TOPIC " + channelName + " :" + newTopic + "\r\n");
 }
