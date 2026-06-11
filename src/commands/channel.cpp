@@ -24,6 +24,12 @@ void Server::joinCommand(Client *client, const std::vector<std::string> &params)
     {
         channel = new Channel(channelName);
         channels[channelName] = channel;
+        channel->addMember(client);
+        channel->addOperator(client);
+
+        std::cout << client->getNickname() << " created channel " << channelName << " and became operator." << std::endl;
+
+        return;
     }
     if (channel->isMember(client))
     {
@@ -32,7 +38,6 @@ void Server::joinCommand(Client *client, const std::vector<std::string> &params)
     }
     channel->addMember(client);
     std::cout << "Client " << client->getNickname() << " joined channel " << channelName << "." << std::endl;
-
 }
 
 void Server::partCommand(Client *client, const std::vector<std::string> &params)
