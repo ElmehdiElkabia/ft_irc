@@ -1,7 +1,6 @@
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
-
 #include <vector>
 #include "Client.hpp"
 #include <iostream>
@@ -10,40 +9,47 @@ class Client;
 
 class Channel
 {
-    private:
-        std::string          name;
-        std::string          topic;
-        std::vector<Client*> members;
-        std::vector<Client*> operators;
+private:
+    std::string name;
+    std::string topic;
+    std::vector<Client *> members;
+    std::vector<Client *> operators;
 
-        bool inviteOnly;
-        bool topicRestricted;
+    std::vector<Client *> invitedClients;
 
-        std::string password;
-        
-        size_t userLimit;
+    bool inviteOnly;
+    bool topicRestricted;
 
-    public:
-        Channel();
-        Channel(const std::string& name);
-        ~Channel();
+    std::string password;
 
-        const std::string& getName() const;
-        const std::string& getTopic() const;
+    size_t userLimit;
 
-        std::vector<Client*>& getMembers();
-        const std::vector<Client*>& getMembers() const;
+public:
+    Channel();
+    Channel(const std::string &name);
+    ~Channel();
 
-        void setTopic(const std::string& topic);
+    const std::string &getName() const;
+    const std::string &getTopic() const;
 
+    std::vector<Client *> &getMembers();
+    const std::vector<Client *> &getMembers() const;
 
-        void addMember(Client* client);
-        void removeMember(Client* client);
+    void setTopic(const std::string &topic);
 
-        size_t memberCount() const;
+    void addMember(Client *client);
+    void removeMember(Client *client);
 
-        bool isMember(Client* client) const;
-        bool isOperator(Client* client) const;
+    size_t memberCount() const;
+
+    bool isMember(Client *client) const;
+    bool isOperator(Client *client) const;
+
+    void addOperator(Client *client);
+
+    void addInvited(Client *client);
+    bool isInvited(Client *client) const;
+    void removeInvitation(Client *client);
 };
 
 #endif
