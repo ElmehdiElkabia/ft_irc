@@ -50,6 +50,10 @@ void Server::handleCommand(Client *client, const std::string &commandLine)
         privmsgCommand(client, cmd.params);
     else if(cmd.command == "TOPIC")
         topicCommand(client, cmd.params);
+	else if (cmd.command == "INVITE")
+		inviteCommand(client, cmd.params);
+    else if (cmd.command == "KICK")
+        kickCommand(client, cmd.params);
     else
         std::cout << "Unknown command: " << cmd.command << std::endl;
 }
