@@ -89,3 +89,36 @@ const std::vector<Client *> &Channel::getMembers() const
 {
     return members;
 }
+
+void Channel::addInvited(Client *client)
+{
+    invitedClients.push_back(client);
+}
+
+bool Channel::isInvited(Client *client) const
+{
+    for (std::vector<Client *>::const_iterator it = invitedClients.begin(); it != invitedClients.end(); ++it)
+    {
+        if (*it == client)
+            return true;
+    }
+    return false;
+}
+
+void Channel::removeInvitation(Client *client)
+{
+    for (std::vector<Client *>::iterator it = invitedClients.begin(); it != invitedClients.end(); ++it)
+    {
+        if (*it == client)
+        {
+            invitedClients.erase(it);
+            break;
+        }
+    }
+}
+
+void Channel::addOperator(Client *client)
+{
+    if (!isOperator(client))
+        operators.push_back(client);
+}
