@@ -74,6 +74,19 @@ bool Channel::isOperator(Client *client) const
     return false;
 }
 
+
+void Channel::removeOperator(Client *client)
+{
+    for (std::vector<Client *>::iterator it = operators.begin(); it != operators.end(); ++it)
+    {
+        if (*it == client)
+        {
+            operators.erase(it);
+            break;
+        }
+    }
+}
+
 size_t Channel::memberCount() const
 {
     return members.size();
@@ -121,4 +134,49 @@ void Channel::addOperator(Client *client)
 {
     if (!isOperator(client))
         operators.push_back(client);
+}
+
+void Channel::setInviteOnly(bool value)
+{
+    inviteOnly = value;
+}
+
+bool Channel::isInviteOnly() const
+{
+    return inviteOnly;
+}
+
+bool Channel::isTopicRestricted() const
+{
+    return topicRestricted;
+}
+
+void Channel::setTopicRestricted(bool value)
+{
+    topicRestricted = value;
+}
+
+bool Channel::hasKey() const
+{
+    return !password.empty();
+}
+
+void Channel::setKey(const std::string &key)
+{
+    password = key;
+}
+
+std::string Channel::getKey() const
+{
+    return password;
+}
+
+int Channel::getUserLimit() const
+{
+    return userLimit;
+}
+
+void Channel::setUserLimit(int limit)
+{
+    userLimit = limit;
 }
