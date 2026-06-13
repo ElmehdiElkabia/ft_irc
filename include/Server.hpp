@@ -41,6 +41,7 @@ public:
     void topicCommand(Client *client, const std::vector<std::string> &params);
     void inviteCommand(Client *client, const std::vector<std::string> &params);
     void kickCommand(Client *client, const std::vector<std::string> &params);
+    void modeCommand(Client *client, const std::vector<std::string> &params);
 };
 
 #endif
