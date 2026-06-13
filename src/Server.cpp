@@ -54,6 +54,8 @@ void Server::handleCommand(Client *client, const std::string &commandLine)
 		inviteCommand(client, cmd.params);
     else if (cmd.command == "KICK")
         kickCommand(client, cmd.params);
+    else if (cmd.command == "MODE")
+        modeCommand(client, cmd.params);
     else
         std::cout << "Unknown command: " << cmd.command << std::endl;
 }
