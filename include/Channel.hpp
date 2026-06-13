@@ -44,12 +44,26 @@ public:
 
     bool isMember(Client *client) const;
     bool isOperator(Client *client) const;
-
+    void removeOperator(Client *client);
     void addOperator(Client *client);
 
     void addInvited(Client *client);
     bool isInvited(Client *client) const;
     void removeInvitation(Client *client);
+
+    void setInviteOnly(bool value);
+    bool isInviteOnly() const;
+
+    bool isTopicRestricted() const;
+    void setTopicRestricted(bool value);
+
+    std::string getKey() const;
+    void setKey(const std::string &key);
+
+    bool hasKey() const;
+
+    int getUserLimit() const;
+    void setUserLimit(int limit);
 };
 
 #endif
