@@ -12,6 +12,12 @@ void Server::topicCommand(Client *client, const std::vector<std::string> &params
         std::cerr << "Invalid number of parameters for TOPIC command." << std::endl;
         return;
     }
+    if (params.size() > 2)
+    {
+        std::cerr << "Too many parameters for TOPIC command."
+                  << std::endl;
+        return;
+    }
     std::string channelName = params[0];
     if (channelName[0] != '#')
     {
@@ -31,7 +37,34 @@ void Server::topicCommand(Client *client, const std::vector<std::string> &params
     }
     if (params.size() == 1)
     {
-        std::cout << "Current topic for channel " << channelName << ": " << channel->getTopic() << std::endl;
+        if (channel->getTopic().empty())
+            std::cout << "No topic is set for channel "
+                      << channelName << std::endl;
+        else
+            std::cout << "Current topic for channel "
+                      << channelName << ": "
+                      << channel->getTopic() << std::endl;
+
+        return;
+    }
+
+    if (params.size() == 2)
+    {
+        if (channel->isTopicRestricted() && !channel->isOperator(client))
+        {
+            std::cerr << "Only operators can set the topic."
+                      << std::endl;
+            return;
+        }
+
+        channel->setTopic(params[1]);
+
+        std::cout << "Topic for channel "
+                  << channelName
+                  << " set to: "
+                  << params[1]
+                  << std::endl;
+
         return;
     }
     std::string newTopic = params[1];
