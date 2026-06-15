@@ -284,24 +284,30 @@ void Server::handleCommand(Client *client, const std::string &commandLine)
 {
 	Command cmd = parseCommand(commandLine);
 
-	if (cmd.command == "PASS")
-		passCommand(client, cmd.params);
-	else if (cmd.command == "NICK")
-		nickCommand(client, cmd.params);
-	else if (cmd.command == "USER")
-		userCommand(client, cmd.params);
-	else if (cmd.command == "JOIN")
-		joinCommand(client, cmd.params);
-	else if (cmd.command == "PART")
-		partCommand(client, cmd.params);
-	else if (cmd.command == "QUIT")
-		quitCommand(client, cmd.params);
-	else if (cmd.command == "PRIVMSG")
-		privmsgCommand(client, cmd.params);
-	else if (cmd.command == "TOPIC")
-		topicCommand(client, cmd.params);
-	else
-		sendToClient(client, "ERROR :Unknown command\r\n");
+    if (cmd.command == "PASS")
+        passCommand(client, cmd.params);
+    else if (cmd.command == "NICK")
+        nickCommand(client, cmd.params);
+    else if (cmd.command == "USER")
+        userCommand(client, cmd.params);
+    else if (cmd.command == "JOIN")
+        joinCommand(client, cmd.params);
+    else if (cmd.command == "PART")
+        partCommand(client, cmd.params);
+    else if (cmd.command == "QUIT")
+        quitCommnand(client, cmd.params);
+    else if (cmd.command == "PRIVMSG")
+        privmsgCommand(client, cmd.params);
+    else if(cmd.command == "TOPIC")
+        topicCommand(client, cmd.params);
+	else if (cmd.command == "INVITE")
+		inviteCommand(client, cmd.params);
+    else if (cmd.command == "KICK")
+        kickCommand(client, cmd.params);
+    else if (cmd.command == "MODE")
+        modeCommand(client, cmd.params);
+    else
+        std::cout << "Unknown command: " << cmd.command << std::endl;
 }
 
 void Server::addClient(Client *client)

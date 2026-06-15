@@ -50,6 +50,10 @@ public:
     Server();
     ~Server();
 
+    // Client* getClient(int fd);
+    Client *getClientByNick(const std::string &nick);
+
+    Channel *getChannel(const std::string &name);
     // Network
     void ServerInit();
     void SerSocket();
@@ -66,6 +70,10 @@ public:
     Channel *getChannel(const std::string &name);
 
     void addClient(Client *client);
+    // void removeClient(int fd);
+
+    // void addChannel(Channel* channel);
+    void addClient(Client *client);
 
     void handleCommand(Client *client, const std::string &commandLine);
 
@@ -77,6 +85,9 @@ public:
     void quitCommand(Client *client, const std::vector<std::string> &params);
     void privmsgCommand(Client *client, const std::vector<std::string> &params);
     void topicCommand(Client *client, const std::vector<std::string> &params);
+    void inviteCommand(Client *client, const std::vector<std::string> &params);
+    void kickCommand(Client *client, const std::vector<std::string> &params);
+    void modeCommand(Client *client, const std::vector<std::string> &params);
 
     void sendToClient(Client *client, const std::string &message);
 };
