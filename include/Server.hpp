@@ -51,9 +51,7 @@ public:
     ~Server();
 
     // Client* getClient(int fd);
-    Client *getClientByNick(const std::string &nick);
 
-    Channel *getChannel(const std::string &name);
     // Network
     void ServerInit();
     void SerSocket();
@@ -73,7 +71,6 @@ public:
     // void removeClient(int fd);
 
     // void addChannel(Channel* channel);
-    void addClient(Client *client);
 
     void handleCommand(Client *client, const std::string &commandLine);
 
