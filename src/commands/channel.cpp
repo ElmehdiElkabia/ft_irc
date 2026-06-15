@@ -6,16 +6,13 @@ void Server::joinCommand(Client *client,
     if (!client->isRegistered())
     {
         sendToClient(client, "ERROR :You must be registered to join a channel\r\n");
-        std::cerr << "You must be registered to join a channel."
-                  << std::endl;
+
         return;
     }
 
     if (params.size() < 1 || params.size() > 2)
     {
         sendToClient(client, "ERROR :Invalid number of parameters for JOIN command\r\n");
-        std::cerr << "Invalid number of parameters for JOIN command."
-                  << std::endl;
         return;
     }
 
@@ -24,8 +21,6 @@ void Server::joinCommand(Client *client,
     if (channelName.empty() || channelName[0] != '#')
     {
         sendToClient(client, "ERROR :Invalid channel name. Channel names must start with '#'.\r\n");
-        std::cerr << "Invalid channel name."
-                  << std::endl;
         return;
     }
 
@@ -39,20 +34,13 @@ void Server::joinCommand(Client *client,
         channel->addMember(client);
         channel->addOperator(client);
 
-        std::cout << client->getNickname()
-                  << " created channel "
-                  << channelName
-                  << " and became operator."
-                  << std::endl;
+        sendToClient(client, "Client " + client->getNickname() + " created channel " + channelName + " and became operator." + "\r\n");
         return;
     }
 
     if (channel->isMember(client))
     {
         sendToClient(client, "ERROR :You are already a member of channel: " + channelName + "\r\n");
-        std::cerr << "You are already a member of channel "
-                  << channelName
-                  << std::endl;
         return;
     }
 
@@ -60,8 +48,7 @@ void Server::joinCommand(Client *client,
     {
         if (!channel->isInvited(client))
         {
-            std::cerr << "Channel is invite-only."
-                      << std::endl;
+            sendToClient(client, "ERROR :Channel " + channelName + " is invite-only. You must be invited to join.\r\n");
             return;
         }
 
@@ -72,15 +59,13 @@ void Server::joinCommand(Client *client,
     {
         if (params.size() < 2)
         {
-            std::cerr << "Channel requires a password."
-                      << std::endl;
+            sendToClient(client, "ERROR :Channel " + channelName + " requires a password. Please provide the password to join.\r\n");
             return;
         }
 
         if (params[1] != channel->getKey())
         {
-            std::cerr << "Incorrect channel password."
-                      << std::endl;
+            sendToClient(client, "ERROR :Incorrect channel password for channel " + channelName + ".\r\n");
             return;
         }
     }
@@ -89,21 +74,13 @@ void Server::joinCommand(Client *client,
     {
         if (channel->memberCount() >= static_cast<size_t>(channel->getUserLimit()))
         {
-            std::cerr << "Channel is full."
-                      << std::endl;
+            sendToClient(client, "ERROR :Channel " + channelName + " is full. User limit reached.\r\n");
             return;
         }
     }
 
     channel->addMember(client);
-    sendToClient(client, "You have joined channel: " + channelName + "\r\n");
-
-    std::cout << "Client "
-              << client->getNickname()
-              << " joined channel "
-              << channelName
-              << "."
-              << std::endl;
+    sendToClient(client, "Client " + client->getNickname() + " joined channel " + channelName + "." + "\r\n");
 }
 
 void Server::partCommand(Client *client, const std::vector<std::string> &params)
