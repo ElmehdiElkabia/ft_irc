@@ -3,6 +3,7 @@
 
 
 #include <iostream>
+#include <sstream>
 
 
 class Client
@@ -38,5 +39,6 @@ class Client
         void setPassAccepted(bool value);
         void setRegistered(bool value);
 };
+
 
 #endif

@@ -71,22 +71,35 @@ void Server::nickCommand(Client *client, const std::vector<std::string> &params)
         sendToClient(client, "ERROR :Invalid number of parameters for NICK command\r\n");
         return;
     }
+
     if (!client->hasPassed())
     {
         sendToClient(client, "ERROR :You must enter the password first\r\n");
         return;
     }
+
     std::string nickname = params[0];
+
     if (!isValidNickname(nickname))
     {
         sendToClient(client, "ERROR :Invalid nickname\r\n");
         return;
     }
-    if (getClientByNick(nickname) != NULL)
+
+    Client *existing = getClientByNick(nickname);
+
+    if (existing && existing != client)
     {
         sendToClient(client, "ERROR :Nickname is already in use\r\n");
         return;
     }
+
+    // if (getClientByNick(nickname) != NULL)
+    // {
+    //     sendToClient(client, "ERROR :Nickname is already in use\r\n");
+    //     return;
+    // }
+
     client->setNickname(nickname);
     sendToClient(client, ":ircserv NOTICE * :Nickname accepted\r\n");
     checkRegistration(client);

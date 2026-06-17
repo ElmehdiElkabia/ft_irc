@@ -5,6 +5,7 @@
 #include "Channel.hpp"
 
 #include <iostream>
+#include <sstream>
 #include <cstring>
 #include <cstdlib>
 #include <map>
@@ -54,7 +55,7 @@ public:
     // Client* getClient(int fd);
 
     // Network
-    void ServerInit();
+    void ServerInit(  int &port, std::string &password );
     void SerSocket();
     void AcceptNewClient();
     void ReceiveNewData(int fd);
