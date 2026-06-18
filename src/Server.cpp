@@ -265,14 +265,37 @@ Server::~Server()
 {
 }
 
+// Client *Server::getClientByNick(const std::string &nick)
+// {
+// 	for (std::map<int, Client *>::iterator it = clients.begin(); it != clients.end(); ++it)
+// 	{
+// 		if (it->second->getNickname() == nick)
+// 			return it->second;
+// 	}
+// 	return NULL;
+// }
+
 Client *Server::getClientByNick(const std::string &nick)
 {
-	for (std::map<int, Client *>::iterator it = clients.begin(); it != clients.end(); ++it)
-	{
-		if (it->second->getNickname() == nick)
-			return it->second;
-	}
-	return NULL;
+    std::cout << "Searching for [" << nick << "]\n";
+
+    for (std::map<int, Client *>::iterator it = clients.begin();
+         it != clients.end();
+         ++it)
+    {
+        std::cout
+            << "fd="
+            << it->first
+            << " nick=["
+            << it->second->getNickname()
+            << "]"
+            << std::endl;
+
+        if (it->second->getNickname() == nick)
+            return it->second;
+    }
+
+    return NULL;
 }
 
 Channel *Server::getChannel(const std::string &name)
