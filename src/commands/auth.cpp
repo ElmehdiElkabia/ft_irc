@@ -22,6 +22,9 @@ static bool isValidNickname(const std::string &nick)
 
 static void checkRegistration(Client *client)
 {
+    if (client->isRegistered())
+        return;
+        
     if (client->hasPassed() && !client->getNickname().empty() && !client->getUsername().empty())
     {
         client->setRegistered(true);
@@ -101,6 +104,14 @@ void Server::nickCommand(Client *client, const std::vector<std::string> &params)
     // }
 
     client->setNickname(nickname);
+
+    std::cout
+    << "fd=" << client->getFd()
+    << " now has nickname ["
+    << client->getNickname()
+    << "]"
+    << std::endl;
+
     sendToClient(client, ":ircserv NOTICE * :Nickname accepted\r\n");
     checkRegistration(client);
 }
