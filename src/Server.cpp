@@ -197,13 +197,16 @@ void Server::ReceiveNewData(int fd)
 	{ //-> print the received data
 		buff[bytes] = '\0';
 		clientBuffers[fd].append(buff, static_cast<size_t>(bytes));
+		// std::cout << "Received: [" << buff << "]" << std::endl;
 		ProcessBuffer(fd);
 	}
 }
 
-void Server::ServerInit()
+void Server::ServerInit( int &port, std::string &password )
 {
-	this->Port = 4444;
+	this->Port = port;
+	this->password = password;
+
 	SerSocket(); //-> create the server socket
 
 	std::cout << GRE << "Server <" << SerSocketFd << "> Connected" << WHI << std::endl;
@@ -262,14 +265,37 @@ Server::~Server()
 {
 }
 
+// Client *Server::getClientByNick(const std::string &nick)
+// {
+// 	for (std::map<int, Client *>::iterator it = clients.begin(); it != clients.end(); ++it)
+// 	{
+// 		if (it->second->getNickname() == nick)
+// 			return it->second;
+// 	}
+// 	return NULL;
+// }
+
 Client *Server::getClientByNick(const std::string &nick)
 {
-	for (std::map<int, Client *>::iterator it = clients.begin(); it != clients.end(); ++it)
-	{
-		if (it->second->getNickname() == nick)
-			return it->second;
-	}
-	return NULL;
+    std::cout << "Searching for [" << nick << "]\n";
+
+    for (std::map<int, Client *>::iterator it = clients.begin();
+         it != clients.end();
+         ++it)
+    {
+        std::cout
+            << "fd="
+            << it->first
+            << " nick=["
+            << it->second->getNickname()
+            << "]"
+            << std::endl;
+
+        if (it->second->getNickname() == nick)
+            return it->second;
+    }
+
+    return NULL;
 }
 
 Channel *Server::getChannel(const std::string &name)
