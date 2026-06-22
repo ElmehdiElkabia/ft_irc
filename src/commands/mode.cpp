@@ -71,59 +71,59 @@ static void handleModeChange(Server *server, Client *client, Channel *channel, c
 
             server->sendToClient(client, "User limit removed for channel " + channel->getName() + ".\r\n");
         }
-        else if (modeChar == 'o')
+    }
+    else if (modeChar == 'o')
+    {
+        if (sign == '+')
         {
-            if (mode == "+o")
+            if (params.size() != 3)
             {
-                if (params.size() != 3)
-                {
-                    server->sendToClient(client, "ERROR :Missing nickname for operator mode change.\r\n");
-                }
-
-                Client *target = server->getClientByNick(params[2]);
-
-                if (!target)
-                {
-                    server->sendToClient(client, "ERROR :No such user: " + params[2] + "\r\n");
-                    return;
-                }
-
-                if (!channel->isMember(target))
-                {
-                    server->sendToClient(client, "ERROR :User " + params[2] + " is not a member of channel: " + channel->getName() + "\r\n");
-                    return;
-                }
-
-                channel->addOperator(target);
-
-                server->sendToClient(client, "User " + params[2] + " is now an operator of channel " + channel->getName() + ".\r\n");
+                server->sendToClient(client, "ERROR :Missing nickname for operator mode change.\r\n");
             }
-            else if (sign == '-')
+
+            Client *target = server->getClientByNick(params[2]);
+
+            if (!target)
             {
-                if (params.size() != 3)
-                {
-                    server->sendToClient(client, "ERROR :Missing nickname for operator mode change.\r\n");
-                    return;
-                }
-
-                Client *target = server->getClientByNick(params[2]);
-
-                if (!target)
-                {
-                    server->sendToClient(client, "ERROR :No such user: " + params[2] + "\r\n");
-                    return;
-                }
-
-                if (!channel->isMember(target))
-                {
-                    server->sendToClient(client, "ERROR :User " + params[2] + " is not a member of channel: " + channel->getName() + "\r\n");
-                    return;
-                }
-
-                channel->removeOperator(target);
-
-                server->sendToClient(client, "User " + params[2] + " is no longer an operator of channel " + channel->getName() + ".\r\n");
+                server->sendToClient(client, "ERROR :No such user: " + params[2] + "\r\n");
+                return;
             }
+
+            if (!channel->isMember(target))
+            {
+                server->sendToClient(client, "ERROR :User " + params[2] + " is not a member of channel: " + channel->getName() + "\r\n");
+                return;
+            }
+
+            channel->addOperator(target);
+
+            server->sendToClient(client, "User " + params[2] + " is now an operator of channel " + channel->getName() + ".\r\n");
+        }
+        else if (sign == '-')
+        {
+            if (params.size() != 3)
+            {
+                server->sendToClient(client, "ERROR :Missing nickname for operator mode change.\r\n");
+                return;
+            }
+
+            Client *target = server->getClientByNick(params[2]);
+
+            if (!target)
+            {
+                server->sendToClient(client, "ERROR :No such user: " + params[2] + "\r\n");
+                return;
+            }
+
+            if (!channel->isMember(target))
+            {
+                server->sendToClient(client, "ERROR :User " + params[2] + " is not a member of channel: " + channel->getName() + "\r\n");
+                return;
+            }
+
+            channel->removeOperator(target);
+
+            server->sendToClient(client, "User " + params[2] + " is no longer an operator of channel " + channel->getName() + ".\r\n");
         }
     }
 }
