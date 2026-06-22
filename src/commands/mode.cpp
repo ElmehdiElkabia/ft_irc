@@ -71,10 +71,12 @@ static void handleModeChange(Server *server, Client *client, Channel *channel, c
 
             server->sendToClient(client, "User limit removed for channel " + channel->getName() + ".\r\n");
         }
-        else if (modeChar == 'o')
+    }
+    else if (modeChar == 'o')
         {
-            if (mode == "+o")
+            if (sign == '+')
             {
+                std::cout << "mode +o ++++" << std::endl;
                 if (params.size() != 3)
                 {
                     server->sendToClient(client, "ERROR :Missing nickname for operator mode change.\r\n");
@@ -126,7 +128,10 @@ static void handleModeChange(Server *server, Client *client, Channel *channel, c
             }
         }
     }
-}
+
+
+
+
 
 void Server::modeCommand(Client *client, const std::vector<std::string> &params)
 {
