@@ -90,4 +90,5 @@ public:
 
     void sendToClient(Client *client, const std::string &message);
 };
+
 #endif

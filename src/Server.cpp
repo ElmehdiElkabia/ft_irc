@@ -18,6 +18,10 @@ void Server::CloseFds()
 		 ++it)
 	{
 		std::cout << RED << "Client <" << it->first << "> Disconnected" << WHI << std::endl;
+		
+		std::string errorMsg = "ERROR :Server shutting down (Ctrl+C received)\r\n";
+		send(it->first, errorMsg.c_str(), errorMsg.length(), 0);
+		
 		shutdown(it->first, SHUT_RDWR);
 		close(it->first);
 		delete it->second;
@@ -213,27 +217,41 @@ void Server::ServerInit(int &port, std::string &password)
 
 	while (Server::Signal == 0) //-> run the server until the signal is received
 	{
-		if ((poll(&fds[0], fds.size(), -1) == -1) && Server::Signal == 0) //-> wait for an event
-			throw(std::runtime_error("poll() faild"));
+		if ((poll(&fds[0], fds.size(), -1) == -1))
+		{
+			if (Server::Signal == 1)
+				break; // Stop immediately if Ctrl+C was pressed
+			throw(std::runtime_error("poll() failed"));
+		}
 
 		for (size_t i = 0; i < fds.size(); i++) //-> check all file descriptors
 		{
+			// 1. Handle errors or hang-ups first
 			if (fds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 			{
 				if (fds[i].fd != SerSocketFd)
+				{
 					ClearClients(fds[i].fd);
+					i--; // ---> FIX: Decrement index because ClearClients removed an item from fds <---
+				}
 				continue;
 			}
+			
+			// 2. Handle data reading
 			if (fds[i].revents & POLLIN) //-> check if there is data to read
 			{
 				if (fds[i].fd == SerSocketFd)
-					AcceptNewClient(); //-> accept new client
+					AcceptNewClient(); // Adds to fds, which is fine since size increases at the end
 				else
-					ReceiveNewData(fds[i].fd); //-> receive new data from a registered client
+				{
+					ReceiveNewData(fds[i].fd);
+					if (i < fds.size() && fds[i].revents == 0) 
+						i--; 
+				}
 			}
 		}
 	}
-	CloseFds(); //-> close the file descriptors when the server stops
+	CloseFds();
 }
 
 void Server::ClearClients(int fd)
