@@ -86,70 +86,70 @@ static void handleModeChange(Client *client, Channel *channel, const std::string
                 << channel->getName()
                 << std::endl;
         }
-        else if (modeChar == 'o')
+    }
+    else if (modeChar == 'o')
+    {
+        if (sign == '+')
         {
-            if (mode == "+o")
+            if (params.size() != 3)
             {
-                if (params.size() != 3)
-                {
-                    std::cerr << "Missing nickname." << std::endl;
-                    return;
-                }
-
-                Client *target = getClientByNick(params[2]);
-
-                if (!target)
-                {
-                    std::cerr << "No such user." << std::endl;
-                    return;
-                }
-
-                if (!channel->isMember(target))
-                {
-                    std::cerr << "User is not in the channel."
-                              << std::endl;
-                    return;
-                }
-
-                channel->addOperator(target);
-
-                std::cout
-                    << target->getNickname()
-                    << " is now an operator of "
-                    << channel->getName()
-                    << std::endl;
+                std::cerr << "Missing nickname." << std::endl;
+                return;
             }
-            else if (sign == '-')
+
+            Client *target = getClientByNick(params[2]);
+
+            if (!target)
             {
-                if (params.size() != 3)
-                {
-                    std::cerr << "Missing nickname." << std::endl;
-                    return;
-                }
-
-                Client *target = getClientByNick(params[2]);
-
-                if (!target)
-                {
-                    std::cerr << "No such user." << std::endl;
-                    return;
-                }
-
-                if (!channel->isMember(target))
-                {
-                    std::cerr << "User is not in the channel."
-                              << std::endl;
-                    return;
-                }
-
-                channel->removeOperator(target);
-
-                std::cout
-                    << target->getNickname()
-                    << " is no longer an operator of "
-                    << channel->getName()
-                    << std::endl;
+                std::cerr << "No such user." << std::endl;
+                return;
             }
+
+            if (!channel->isMember(target))
+            {
+                std::cerr << "User is not in the channel."
+                          << std::endl;
+                return;
+            }
+
+            channel->addOperator(target);
+
+            std::cout
+                << target->getNickname()
+                << " is now an operator of "
+                << channel->getName()
+                << std::endl;
+        }
+        else if (sign == '-')
+        {
+            if (params.size() != 3)
+            {
+                std::cerr << "Missing nickname." << std::endl;
+                return;
+            }
+
+            Client *target = getClientByNick(params[2]);
+
+            if (!target)
+            {
+                std::cerr << "No such user." << std::endl;
+                return;
+            }
+
+            if (!channel->isMember(target))
+            {
+                std::cerr << "User is not in the channel."
+                          << std::endl;
+                return;
+            }
+
+            channel->removeOperator(target);
+
+            std::cout
+                << target->getNickname()
+                << " is no longer an operator of "
+                << channel->getName()
+                << std::endl;
         }
     }
 }
