@@ -25,7 +25,7 @@ class Server //-> class for server
 private:
 	int Port; //-> server port
 	int SerSocketFd; //-> server socket file descriptor
-	static bool Signal; //-> static boolean for signal
+	static volatile sig_atomic_t Signal; //-> static signal flag
 	std::vector<Client> clients; //-> vector of clients
 	std::vector<struct pollfd> fds; //-> vector of pollfd
 	std::map<int, std::string> clientBuffers; //-> per-client input buffers
@@ -48,7 +48,8 @@ public:
 };
 
 //-------------------------------------------------------//
-void Server::ClearClients(int fd) { //-> clear the clients
+inline void Server::ClearClients(int fd) { //-> clear the clients
+	shutdown(fd, SHUT_RDWR);
 	close(fd);
 	for(size_t i = 0; i < fds.size(); i++) { //-> remove the client from the pollfd
 		if (fds[i].fd == fd) {

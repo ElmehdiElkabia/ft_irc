@@ -3,16 +3,16 @@
 #include <cctype>
 
 
-bool Server::Signal = false; //-> initialize the static boolean
+volatile sig_atomic_t Server::Signal = 0; //-> initialize the static signal flag
 void Server::SignalHandler(int signum) {
 	(void)signum;
-	std::cout << std::endl << "Signal Received!" << std::endl;
-	Server::Signal = true; //-> set the static boolean to true to stop the server
+	Server::Signal = 1; //-> set the static flag to stop the server
 }
 
 void Server::CloseFds() {
 	for(size_t i = 0; i < clients.size(); i++) { //-> close all the clients
 		std::cout << RED << "Client <" << clients[i].GetFd() << "> Disconnected" << WHI << std::endl;
+		shutdown(clients[i].GetFd(), SHUT_RDWR);
 		close(clients[i].GetFd());
 	}
 	clients.clear();
@@ -164,13 +164,20 @@ void Server::ServerInit() {
 	std::cout << GRE << "Server <" << SerSocketFd << "> Connected" << WHI << std::endl;
 	std::cout << "Waiting to accept a connection...\n";
 
-	while (Server::Signal == false) //-> run the server until the signal is received
+	while (Server::Signal == 0) //-> run the server until the signal is received
 	{
-		if((poll(&fds[0],fds.size(),-1) == -1) && Server::Signal == false) //-> wait for an event
+		if((poll(&fds[0],fds.size(),-1) == -1) && Server::Signal == 0) //-> wait for an event
 			throw(std::runtime_error("poll() faild"));
 
 		for (size_t i = 0; i < fds.size(); i++) //-> check all file descriptors
 		{
+			if (fds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
+			{
+				if (fds[i].fd != SerSocketFd)
+					ClearClients(fds[i].fd);
+				continue;
+			}
+
 			if (fds[i].revents & POLLIN)//-> check if there is data to read
 			{
 				if (fds[i].fd == SerSocketFd)
