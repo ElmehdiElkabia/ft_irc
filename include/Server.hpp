@@ -34,7 +34,7 @@ private:
     // Network
     int Port;
     int SerSocketFd;
-    static bool Signal;
+	static volatile sig_atomic_t Signal; //-> static signal flag
 
     std::vector<struct pollfd> fds;
     std::map<int, std::string> clientBuffers;

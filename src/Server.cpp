@@ -4,13 +4,11 @@
 #include <cerrno>
 #include <cctype>
 
-bool Server::Signal = false; //-> initialize the static boolean
+volatile sig_atomic_t Server::Signal = 0; //-> initialize the static signal flag
 void Server::SignalHandler(int signum)
 {
 	(void)signum;
-	std::cout << std::endl
-			  << "Signal Received!" << std::endl;
-	Server::Signal = true; //-> set the static boolean to true to stop the server
+	Server::Signal = 1; //-> set the static flag to stop the server
 }
 
 void Server::CloseFds()
@@ -20,6 +18,7 @@ void Server::CloseFds()
 		 ++it)
 	{
 		std::cout << RED << "Client <" << it->first << "> Disconnected" << WHI << std::endl;
+		shutdown(it->first, SHUT_RDWR);
 		close(it->first);
 		delete it->second;
 	}
@@ -202,7 +201,7 @@ void Server::ReceiveNewData(int fd)
 	}
 }
 
-void Server::ServerInit( int &port, std::string &password )
+void Server::ServerInit(int &port, std::string &password)
 {
 	this->Port = port;
 	this->password = password;
@@ -212,13 +211,19 @@ void Server::ServerInit( int &port, std::string &password )
 	std::cout << GRE << "Server <" << SerSocketFd << "> Connected" << WHI << std::endl;
 	std::cout << "Waiting to accept a connection...\n";
 
-	while (Server::Signal == false) //-> run the server until the signal is received
+	while (Server::Signal == 0) //-> run the server until the signal is received
 	{
-		if ((poll(&fds[0], fds.size(), -1) == -1) && Server::Signal == false) //-> wait for an event
+		if ((poll(&fds[0], fds.size(), -1) == -1) && Server::Signal == 0) //-> wait for an event
 			throw(std::runtime_error("poll() faild"));
 
 		for (size_t i = 0; i < fds.size(); i++) //-> check all file descriptors
 		{
+			if (fds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
+			{
+				if (fds[i].fd != SerSocketFd)
+					ClearClients(fds[i].fd);
+				continue;
+			}
 			if (fds[i].revents & POLLIN) //-> check if there is data to read
 			{
 				if (fds[i].fd == SerSocketFd)
@@ -277,25 +282,25 @@ Server::~Server()
 
 Client *Server::getClientByNick(const std::string &nick)
 {
-    std::cout << "Searching for [" << nick << "]\n";
+	std::cout << "Searching for [" << nick << "]\n";
 
-    for (std::map<int, Client *>::iterator it = clients.begin();
-         it != clients.end();
-         ++it)
-    {
-        std::cout
-            << "fd="
-            << it->first
-            << " nick=["
-            << it->second->getNickname()
-            << "]"
-            << std::endl;
+	for (std::map<int, Client *>::iterator it = clients.begin();
+		 it != clients.end();
+		 ++it)
+	{
+		std::cout
+			<< "fd="
+			<< it->first
+			<< " nick=["
+			<< it->second->getNickname()
+			<< "]"
+			<< std::endl;
 
-        if (it->second->getNickname() == nick)
-            return it->second;
-    }
+		if (it->second->getNickname() == nick)
+			return it->second;
+	}
 
-    return NULL;
+	return NULL;
 }
 
 Channel *Server::getChannel(const std::string &name)
