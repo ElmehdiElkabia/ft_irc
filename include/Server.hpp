@@ -90,6 +90,8 @@ public:
     void modeCommand(Client *client, const std::vector<std::string> &params);
 
     void sendToClient(Client *client, const std::string &message);
+
+    void sendJoinReplies(Client *client, Channel *channel);
 };
 
 #endif
