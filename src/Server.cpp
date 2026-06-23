@@ -343,8 +343,6 @@ void Server::handleCommand(Client *client, const std::string &commandLine)
 		joinCommand(client, cmd.params);
 	else if (cmd.command == "PART")
 		partCommand(client, cmd.params);
-	else if (cmd.command == "QUIT")
-		quitCommand(client, cmd.params);
 	else if (cmd.command == "PRIVMSG")
 		privmsgCommand(client, cmd.params);
 	else if (cmd.command == "TOPIC")
