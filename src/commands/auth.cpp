@@ -8,7 +8,7 @@ bool isSpecial(char c)
 
 static bool isValidNickname(const std::string &nick)
 {
-    if (nick.empty() || nick.length() > 9)
+    if (nick.empty())
         return false;
     if (!isalpha(nick[0]) && !isSpecial(nick[0]))
         return false;
@@ -22,11 +22,15 @@ static bool isValidNickname(const std::string &nick)
 
 static void checkRegistration(Client *client)
 {
+    if (client->isRegistered())
+        return;
 
     if (client->hasPassed() && !client->getNickname().empty() && !client->getUsername().empty())
     {
         client->setRegistered(true);
+
         std::string welcomeMsg = RPL_WELCOME(client->getNickname(), client->getUsername(), client->getHostname()) + "\r\n";
+
         send(client->getFd(), welcomeMsg.c_str(), welcomeMsg.size(), 0);
     }
 }
@@ -43,7 +47,7 @@ void Server::passCommand(Client *client, const std::vector<std::string> &params)
 
     if (client->hasPassed())
     {
-        sendToClient(client, ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
+        sendToClient(client, ERR_PASSWDMISMATCH(client->getNickname()) + "\r\n");
         return;
     }
 
@@ -61,7 +65,6 @@ void Server::passCommand(Client *client, const std::vector<std::string> &params)
 
     client->setPassAccepted(true);
 
-
     checkRegistration(client);
 }
 
@@ -75,7 +78,7 @@ void Server::nickCommand(Client *client, const std::vector<std::string> &params)
 
     if (!client->hasPassed())
     {
-        sendToClient(client, ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
+        sendToClient(client, ERR_PASSWDMISMATCH(client->getNickname()) + "\r\n");
         return;
     }
 
@@ -91,14 +94,17 @@ void Server::nickCommand(Client *client, const std::vector<std::string> &params)
 
     if (existing && existing != client)
     {
-        sendToClient(client,ERR_NICKNAMEINUSE(client->getNickname(), nickname) + "\r\n");
+        sendToClient(client, ERR_NICKNAMEINUSE(client->getNickname(), nickname) + "\r\n");
         return;
     }
 
+    std::string oldNickname = client->getNickname();
+
     client->setNickname(nickname);
-
-
-    checkRegistration(client);
+    if (client->isRegistered())
+        sendToClient(client, ":" + oldNickname + " NICK :" + nickname + "\r\n");
+    else
+        checkRegistration(client);
 }
 
 void Server::userCommand(Client *client, const std::vector<std::string> &params)
@@ -108,25 +114,30 @@ void Server::userCommand(Client *client, const std::vector<std::string> &params)
         sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "USER") + "\r\n");
         return;
     }
+
     if (!client->hasPassed())
     {
-        sendToClient(client, ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
+        sendToClient(client, ERR_PASSWDMISMATCH(client->getNickname()) + "\r\n");
         return;
     }
+
     if (!client->getUsername().empty())
     {
         sendToClient(client, ERR_ALREADYREGISTRED(client->getNickname()) + "\r\n");
         return;
     }
+
     std::string username = params[0];
+
     if (username.empty())
     {
         sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "USER") + "\r\n");
         return;
     }
+
     client->setUsername(username);
     client->setHostname(params[1]);
     client->setRealname(params[3]);
-    client->setRegistered(true);
+
     checkRegistration(client);
 }
