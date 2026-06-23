@@ -1,19 +1,63 @@
 #include "../../include/Server.hpp"
 
-void Server::joinCommand(Client *client,
-                         const std::vector<std::string> &params)
+std::string Channel::getNamesList() const
+{
+    std::string names;
+
+    for (size_t i = 0; i < members.size(); i++)
+    {
+        if (i)
+            names += " ";
+
+        if (isOperator(members[i]))
+            names += "@";
+
+        names += members[i]->getNickname();
+    }
+
+    return names;
+}
+
+void Server::sendJoinReplies(Client *client, Channel *channel)
+{
+    std::string channelName = channel->getName();
+
+    // Broadcast JOIN
+    for (size_t i = 0; i < channel->memberCount(); i++)
+    {
+        Client *member = channel->getMembers()[i];
+
+        sendToClient(member, ":" + client->getNickname() + " JOIN " + channelName + "\r\n");
+    }
+
+    // TOPIC
+    if (channel->getTopic().empty())
+    {
+        sendToClient(client, RPL_NOTOPIC(client->getNickname(), channelName) + "\r\n");
+    }
+    else
+    {
+        sendToClient(client, RPL_TOPIC(client->getNickname(), channelName, channel->getTopic()) + "\r\n");
+    }
+
+    // NAMES
+    sendToClient(client, RPL_NAMREPLY(client->getNickname(), channelName, channel->getNamesList()) + "\r\n");
+
+    // ENDOFNAMES
+    sendToClient(client, RPL_ENDOFNAMES( client->getNickname(), channelName) + "\r\n");
+}
+
+void Server::joinCommand(Client *client, const std::vector<std::string> &params)
 {
     if (!client->isRegistered())
     {
-        sendToClient(client,
-                     ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
+        sendToClient(client, ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
         return;
     }
 
     if (params.empty())
     {
-        sendToClient(client,
-                     ERR_NEEDMOREPARAMS(client->getNickname(), "JOIN") + "\r\n");
+        sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "JOIN") + "\r\n");
         return;
     }
 
@@ -21,8 +65,7 @@ void Server::joinCommand(Client *client,
 
     if (channelName.empty() || channelName[0] != '#')
     {
-        sendToClient(client,
-                     ERR_NOSUCHCHANNEL(client->getNickname(), channelName) + "\r\n");
+        sendToClient(client, ERR_NOSUCHCHANNEL(client->getNickname(), channelName) + "\r\n");
         return;
     }
 
@@ -37,25 +80,7 @@ void Server::joinCommand(Client *client,
         channel->addMember(client);
         channel->addOperator(client);
 
-        sendToClient(client,
-                     ":" + client->getNickname() +
-                         " JOIN " + channelName + "\r\n");
-
-        if (channel->getTopic().empty())
-        {
-            sendToClient(client,
-                         RPL_NOTOPIC(client->getNickname(),
-                                     channelName) +
-                             "\r\n");
-        }
-        else
-        {
-            sendToClient(client,
-                         RPL_TOPIC(client->getNickname(),
-                                   channelName,
-                                   channel->getTopic()) +
-                             "\r\n");
-        }
+        sendJoinReplies(client, channel);
 
         return;
     }
@@ -70,10 +95,7 @@ void Server::joinCommand(Client *client,
     {
         if (!channel->isInvited(client))
         {
-            sendToClient(client,
-                         ERR_INVITEONLYCHAN(client->getNickname(),
-                                            channelName) +
-                             "\r\n");
+            sendToClient(client, ERR_INVITEONLYCHAN(client->getNickname(), channelName) + "\r\n");
             return;
         }
 
@@ -86,10 +108,7 @@ void Server::joinCommand(Client *client,
         if (params.size() < 2 ||
             params[1] != channel->getKey())
         {
-            sendToClient(client,
-                         ERR_BADCHANNELKEY(client->getNickname(),
-                                           channelName) +
-                             "\r\n");
+            sendToClient(client, ERR_BADCHANNELKEY(client->getNickname(), channelName) + "\r\n");
             return;
         }
     }
@@ -99,50 +118,26 @@ void Server::joinCommand(Client *client,
         channel->memberCount() >=
             static_cast<size_t>(channel->getUserLimit()))
     {
-        sendToClient(client,
-                     ERR_CHANNELISFULL(client->getNickname(),
-                                       channelName) +
-                         "\r\n");
+        sendToClient(client, ERR_CHANNELISFULL(client->getNickname(), channelName) + "\r\n");
         return;
     }
 
     channel->addMember(client);
 
-    sendToClient(client,
-                 ":" + client->getNickname() +
-                     " JOIN " + channelName + "\r\n");
-
-    if (channel->getTopic().empty())
-    {
-        sendToClient(client,
-                     RPL_NOTOPIC(client->getNickname(),
-                                 channelName) +
-                         "\r\n");
-    }
-    else
-    {
-        sendToClient(client,
-                     RPL_TOPIC(client->getNickname(),
-                               channelName,
-                               channel->getTopic()) +
-                         "\r\n");
-    }
+    sendJoinReplies(client, channel);
 }
 
-void Server::partCommand(Client *client,
-                         const std::vector<std::string> &params)
+void Server::partCommand(Client *client, const std::vector<std::string> &params)
 {
     if (!client->isRegistered())
     {
-        sendToClient(client,
-                     ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
+        sendToClient(client, ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
         return;
     }
 
-    if (params.size() != 1)
+    if (params.size() < 1)
     {
-        sendToClient(client,
-                     ERR_NEEDMOREPARAMS(client->getNickname(), "PART") + "\r\n");
+        sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "PART") + "\r\n");
         return;
     }
 
@@ -150,10 +145,7 @@ void Server::partCommand(Client *client,
 
     if (channelName.empty() || channelName[0] != '#')
     {
-        sendToClient(client,
-                     ERR_NOSUCHCHANNEL(client->getNickname(),
-                                       channelName) +
-                         "\r\n");
+        sendToClient(client, ERR_NOSUCHCHANNEL(client->getNickname(), channelName) + "\r\n");
         return;
     }
 
@@ -161,24 +153,22 @@ void Server::partCommand(Client *client,
 
     if (!channel)
     {
-        sendToClient(client,
-                     ERR_NOSUCHCHANNEL(client->getNickname(),
-                                       channelName) +
-                         "\r\n");
+        sendToClient(client, ERR_NOSUCHCHANNEL(client->getNickname(), channelName) + "\r\n");
         return;
     }
 
     if (!channel->isMember(client))
     {
-        sendToClient(client,
-                     ERR_NOTONCHANNEL(client->getNickname(),
-                                      channelName) +
-                         "\r\n");
+        sendToClient(client, ERR_NOTONCHANNEL(client->getNickname(), channelName) + "\r\n");
         return;
     }
 
-    sendToClient(client,
-                 ":" + client->getNickname() + " PART " + channelName + "\r\n");
+    for (size_t i = 0; i < channel->memberCount(); i++)
+    {
+        Client *member = channel->getMembers()[i];
+
+        sendToClient(member, ":" + client->getNickname() + " PART " + channelName + "\r\n");
+    };
 
     channel->removeMember(client);
 
