@@ -4,143 +4,169 @@ void Server::topicCommand(Client *client, const std::vector<std::string> &params
 {
     if (!client->isRegistered())
     {
-        sendToClient(client, "ERROR :You must be registered to set or view a topic\r\n");
+        sendToClient(client, ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
         return;
     }
     if (params.size() < 1)
     {
-        sendToClient(client, "ERROR :Invalid number of parameters for TOPIC command\r\n");
+        sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "TOPIC") + "\r\n");
         return;
     }
     if (params.size() > 2)
     {
-        sendToClient(client, "ERROR :Too many parameters for TOPIC command\r\n");
+        sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "TOPIC") + "\r\n");
         return;
     }
     std::string channelName = params[0];
     if (channelName[0] != '#')
     {
-        sendToClient(client, "ERROR :Invalid channel name. Channel names must start with '#'.\r\n");
+        sendToClient(client, ERR_NOSUCHCHANNEL(client->getNickname(), channelName) + "\r\n");
         return;
     }
     Channel *channel = getChannel(channelName);
     if (!channel)
     {
-        sendToClient(client, "ERROR :No such channel: " + channelName + "\r\n");
+        sendToClient(client, ERR_NOSUCHCHANNEL(client->getNickname(), channelName) + "\r\n");
         return;
     }
     if (!channel->isMember(client))
     {
-        sendToClient(client, "ERROR :You are not a member of channel: " + channelName + "\r\n");
+        sendToClient(client, ERR_NOTONCHANNEL(client->getNickname(), channelName) + "\r\n");
         return;
     }
     if (params.size() == 1)
     {
-        std::cout << "Current topic for channel " << channelName << ": " << channel->getTopic() << std::endl;
+        std::string topic = channel->getTopic();
+        if (topic.empty())
+        {
+            sendToClient(client, RPL_NOTOPIC(client->getNickname(), channelName) + "\r\n");
+        }
+        else
+        {
+            sendToClient(client, RPL_TOPIC(client->getNickname(), channelName, topic) + "\r\n");
+        }
+        return;
+    }
+    if (channel->isTopicRestricted() && !channel->isOperator(client))
+    {
+        sendToClient(client, ERR_CHANOPRIVSNEEDED(client->getNickname(), channelName) + "\r\n");
         return;
     }
     std::string newTopic = params[1];
     channel->setTopic(newTopic);
-    sendToClient(client, "TOPIC " + channelName + " :" + newTopic + "\r\n");
+    for (size_t i = 0; i < channel->memberCount(); i++)
+    {
+        Client *member = channel->getMembers()[i];
+
+        sendToClient(member, ":" + client->getNickname() + " TOPIC " + channelName + " :" + newTopic + "\r\n");
+    }
 }
 
 void Server::inviteCommand(Client *client, const std::vector<std::string> &params)
 {
     if (!client->isRegistered())
     {
-        sendToClient(client, "ERROR :You must be registered to invite someone to a channel\r\n");
+        sendToClient(client, ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
         return;
     }
     if (params.size() != 2)
     {
-        sendToClient(client, "ERROR :Invalid number of parameters for INVITE command\r\n");
+        sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "INVITE") + "\r\n");
         return;
     }
     std::string nickname = params[0];
     Client *invitee = getClientByNick(nickname);
     if (!invitee)
     {
-        sendToClient(client, "ERROR :No such user: " + nickname + "\r\n");
+        sendToClient(client, ERR_NOSUCHNICK(client->getNickname(), nickname) + "\r\n");
         return;
     }
     std::string channelName = params[1];
     if (channelName[0] != '#' || channelName.empty())
     {
-        sendToClient(client, "ERROR :Invalid channel name. Channel names must start with '#'.\r\n");
+        sendToClient(client, ERR_NOSUCHCHANNEL(client->getNickname(), channelName) + "\r\n");
         return;
     }
     Channel *channel = getChannel(channelName);
     if (!channel)
     {
-        sendToClient(client, "ERROR :No such channel: " + channelName + "\r\n");
+        sendToClient(client, ERR_NOSUCHCHANNEL(client->getNickname(), channelName) + "\r\n");
         return;
     }
     if (!channel->isMember(client))
     {
-        sendToClient(client, "ERROR :You are not a member of channel: " + channelName + "\r\n");
+        sendToClient(client, ERR_NOTONCHANNEL(client->getNickname(), channelName) + "\r\n");
         return;
     }
     if (channel->isMember(invitee))
     {
-        sendToClient(client, "ERROR :User " + nickname + " is already a member of channel: " + channelName + "\r\n");
+        sendToClient(client, ERR_USERONCHANNEL(client->getNickname(), nickname, channelName) + "\r\n");
         return;
     }
     if (channel->isInvited(invitee))
     {
-        sendToClient(client, "ERROR :User " + nickname + " has already been invited to channel: " + channelName + "\r\n");
+        sendToClient(client, ERR_USERONCHANNEL(client->getNickname(), nickname, channelName) + "\r\n");
         return;
     }
     channel->addInvited(invitee);
-    sendToClient(client, "User " + nickname + " has been invited to channel " + channelName + "." + "\r\n");
+    sendToClient(client, RPL_INVITING(client->getNickname(), channelName, nickname) + "\r\n");
+    sendToClient(invitee, ":" + client->getNickname() + " INVITE " + nickname + " :" + channelName + "\r\n");
 }
 
 void Server::kickCommand(Client *client, const std::vector<std::string> &params)
 {
     if (!client->isRegistered())
     {
-        sendToClient(client, "ERROR :You must be registered to kick someone from a channel\r\n");
+        sendToClient(client, ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
         return;
     }
-    if (params.size() != 2)
+    if (params.size() < 2)
     {
-        sendToClient(client, "ERROR :Invalid number of parameters for KICK command\r\n");
+        sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "KICK") + "\r\n");
         return;
     }
 
     std::string channelName = params[0];
     if (channelName[0] != '#' || channelName.empty())
     {
-        sendToClient(client, "ERROR :Invalid channel name. Channel names must start with '#'.\r\n");
+        sendToClient(client, ERR_NOSUCHCHANNEL(client->getNickname(), channelName) + "\r\n");
         return;
     }
     Channel *channel = getChannel(channelName);
     if (!channel)
     {
-        sendToClient(client, "ERROR :No such channel: " + channelName + "\r\n");
+        sendToClient(client, ERR_NOSUCHCHANNEL(client->getNickname(), channelName) + "\r\n");
         return;
     }
     std::string nickname = params[1];
     Client *kickee = getClientByNick(nickname);
     if (!kickee)
     {
-        sendToClient(client, "ERROR :No such user: " + nickname + "\r\n");
+        sendToClient(client, ERR_NOSUCHNICK(client->getNickname(), nickname) + "\r\n");
         return;
     }
     if (!channel->isMember(client))
     {
-        sendToClient(client, "ERROR :You are not a member of channel: " + channelName + "\r\n");
+        sendToClient(client, ERR_NOTONCHANNEL(client->getNickname(), channelName) + "\r\n");
         return;
     }
     if (!channel->isOperator(client))
     {
-        sendToClient(client, "ERROR :You must be an operator to kick someone from channel: " + channelName + "\r\n");
+        sendToClient(client, ERR_CHANOPRIVSNEEDED(client->getNickname(), channelName) + "\r\n");
         return;
     }
     if (!channel->isMember(kickee))
     {
-        sendToClient(client, "ERROR :User " + nickname + " is not a member of channel: " + channelName + "\r\n");
+        sendToClient(client, ERR_USERNOTINCHANNEL(client->getNickname(), nickname, channelName) + "\r\n");
         return;
     }
+    std::string msg = ":" + client->getNickname() + " KICK " + channelName + " " + nickname + "\r\n";
+
+    for (size_t i = 0; i < channel->memberCount(); i++)
+    {
+        sendToClient(channel->getMembers()[i], msg);
+    }
+
+    sendToClient(kickee, msg);
     channel->removeMember(kickee);
-    sendToClient(kickee, "You have been kicked from channel: " + channelName + "\r\n");
 }
