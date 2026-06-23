@@ -25,6 +25,8 @@
 #define GRE "\e[1;32m"
 #define YEL "\e[1;33m"
 
+#include "Replies.hpp"
+
 class Client;
 class Channel;
 
