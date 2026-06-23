@@ -64,6 +64,8 @@ public:
 
     int getUserLimit() const;
     void setUserLimit(int limit);
+
+    std::string getNamesList() const;
 };
 
 #endif
