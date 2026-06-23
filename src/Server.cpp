@@ -18,10 +18,10 @@ void Server::CloseFds()
 		 ++it)
 	{
 		std::cout << RED << "Client <" << it->first << "> Disconnected" << WHI << std::endl;
-		
+
 		std::string errorMsg = "ERROR :Server shutting down (Ctrl+C received)\r\n";
 		send(it->first, errorMsg.c_str(), errorMsg.length(), 0);
-		
+
 		shutdown(it->first, SHUT_RDWR);
 		close(it->first);
 		delete it->second;
@@ -236,7 +236,7 @@ void Server::ServerInit(int &port, std::string &password)
 				}
 				continue;
 			}
-			
+
 			// 2. Handle data reading
 			if (fds[i].revents & POLLIN) //-> check if there is data to read
 			{
@@ -245,8 +245,8 @@ void Server::ServerInit(int &port, std::string &password)
 				else
 				{
 					ReceiveNewData(fds[i].fd);
-					if (i < fds.size() && fds[i].revents == 0) 
-						i--; 
+					if (i < fds.size() && fds[i].revents == 0)
+						i--;
 				}
 			}
 		}
@@ -354,7 +354,7 @@ void Server::handleCommand(Client *client, const std::string &commandLine)
 	else if (cmd.command == "MODE")
 		modeCommand(client, cmd.params);
 	else
-		sendToClient(client, "ERROR :Unknown command\r\n");
+		sendToClient(client, ERR_UNKNOWNCOMMAND(client->getNickname(), cmd.command) + "\r\n");
 }
 
 void Server::addClient(Client *client)
@@ -362,12 +362,7 @@ void Server::addClient(Client *client)
 	clients[client->getFd()] = client;
 }
 
-void Server::sendToClient(
-	Client *client,
-	const std::string &message)
+void Server::sendToClient(Client *client, const std::string &message)
 {
-	send(client->getFd(),
-		 message.c_str(),
-		 message.size(),
-		 0);
+	send(client->getFd(), message.c_str(), message.size(), 0);
 }
