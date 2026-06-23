@@ -83,7 +83,6 @@ public:
     void userCommand(Client *client, const std::vector<std::string> &params);
     void joinCommand(Client *client, const std::vector<std::string> &params);
     void partCommand(Client *client, const std::vector<std::string> &params);
-    void quitCommand(Client *client, const std::vector<std::string> &params);
     void privmsgCommand(Client *client, const std::vector<std::string> &params);
     void topicCommand(Client *client, const std::vector<std::string> &params);
     void inviteCommand(Client *client, const std::vector<std::string> &params);
