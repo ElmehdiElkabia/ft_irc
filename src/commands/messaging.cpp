@@ -4,12 +4,12 @@ void Server::privmsgCommand(Client *client, const std::vector<std::string> &para
 {
     if (!client->isRegistered())
     {
-        sendToClient(client, "ERROR :You must be registered to send a private message\r\n");
+        sendToClient(client, ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
         return;
     }
     if (params.size() < 2)
     {
-        sendToClient(client, "ERROR :Invalid number of parameters for PRIVMSG command\r\n");
+        sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "PRIVMSG") + "\r\n");
         return;
     }
     std::string target = params[0];
@@ -19,12 +19,12 @@ void Server::privmsgCommand(Client *client, const std::vector<std::string> &para
         Channel *channel = getChannel(target);
         if (!channel)
         {
-            sendToClient(client, "ERROR :No such channel: " + target + "\r\n");
+            sendToClient(client, ERR_NOSUCHCHANNEL(client->getNickname(), target) + "\r\n");
             return;
         }
         if (!channel->isMember(client))
         {
-            sendToClient(client, "ERROR :You are not a member of channel: " + target + "\r\n");
+            sendToClient(client, ERR_NOTONCHANNEL(client->getNickname(), target) + "\r\n");
             return;
         }
         for (size_t i = 0; i < channel->memberCount(); ++i)
@@ -32,7 +32,7 @@ void Server::privmsgCommand(Client *client, const std::vector<std::string> &para
             Client *member = channel->getMembers()[i];
 
             if (member != client)
-                sendToClient(member, "PRIVMSG " + target + " :" + message + "\r\n");
+                sendToClient(member, ":" + client->getNickname() + " PRIVMSG " + target + " :" + message + "\r\n");
         }
     }
     else
@@ -40,9 +40,9 @@ void Server::privmsgCommand(Client *client, const std::vector<std::string> &para
         Client *targetClient = getClientByNick(target);
         if (!targetClient)
         {
-            sendToClient(client, "ERROR :No such user: " + target + "\r\n");
+            sendToClient(client, ERR_NOSUCHNICK(client->getNickname(), target) + "\r\n");
             return;
         }
-        sendToClient(targetClient, "PRIVMSG " + target + " :" + message + "\r\n");
+        sendToClient(targetClient, ":" + client->getNickname() + " PRIVMSG " + target + " :" + message + "\r\n");
     }
 }
