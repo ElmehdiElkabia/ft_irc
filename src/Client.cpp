@@ -24,6 +24,12 @@ int Client::getFd() const
     return fd;
 }
 
+std::string Client::getHostname() const
+{
+    return hostname;
+}
+
+
 const std::string& Client::getNickname() const
 {
     return nickname;
