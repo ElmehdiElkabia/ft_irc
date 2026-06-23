@@ -9,12 +9,12 @@ static void handleModeChange(Server *server, Client *client, Channel *channel, c
         if (sign == '+')
         {
             channel->setInviteOnly(true);
-            server->sendToClient(client, "Channel " + channel->getName() + " is now invite-only.\r\n");
+            server->sendToClient(client, ":" + client->getNickname() + " MODE " + channel->getName() + " +i\r\n");
         }
         else if (sign == '-')
         {
             channel->setInviteOnly(false);
-            server->sendToClient(client, "Channel " + channel->getName() + " is no longer invite-only.\r\n");
+            server->sendToClient(client, ":" + client->getNickname() + " MODE " + channel->getName() + " -i\r\n");
         }
     }
     else if (modeChar == 't')
@@ -22,12 +22,12 @@ static void handleModeChange(Server *server, Client *client, Channel *channel, c
         if (sign == '+')
         {
             channel->setTopicRestricted(true);
-            server->sendToClient(client, "Channel " + channel->getName() + " is now topic-restricted.\r\n");
+            server->sendToClient(client, ":" + client->getNickname() + " MODE " + channel->getName() + " +t\r\n");
         }
         else if (sign == '-')
         {
             channel->setTopicRestricted(false);
-            server->sendToClient(client, "Channel " + channel->getName() + " is no longer topic-restricted.\r\n");
+            server->sendToClient(client, ":" + client->getNickname() + " MODE " + channel->getName() + " -t\r\n");
         }
     }
     else if (modeChar == 'k')
@@ -36,19 +36,19 @@ static void handleModeChange(Server *server, Client *client, Channel *channel, c
         {
             if (params.size() != 3)
             {
-                server->sendToClient(client, "ERROR :Missing password for channel " + channel->getName() + ".\r\n");
+                server->sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "MODE") + "\r\n");
                 return;
             }
 
             channel->setKey(params[2]);
 
-            server->sendToClient(client, "Password set for channel " + channel->getName() + ".\r\n");
+            server->sendToClient(client, ":" + client->getNickname() + " MODE " + channel->getName() + " +k " + params[2] + "\r\n");
         }
         else if (sign == '-')
         {
             channel->setKey("");
 
-            server->sendToClient(client, "Password removed for channel " + channel->getName() + ".\r\n");
+            server->sendToClient(client, ":" + client->getNickname() + " MODE " + channel->getName() + " -k\r\n");
         }
     }
     else if (modeChar == 'l')
@@ -57,19 +57,20 @@ static void handleModeChange(Server *server, Client *client, Channel *channel, c
         {
             if (params.size() != 3)
             {
-                server->sendToClient(client, "ERROR :Missing user limit for channel " + channel->getName() + ".\r\n");
+                server->sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "MODE") + "\r\n");
+                return;
             }
 
             int limit = std::atoi(params[2].c_str());
             channel->setUserLimit(limit);
 
-            server->sendToClient(client, "User limit for channel " + channel->getName() + ".\r\n");
+            server->sendToClient(client, ":" + client->getNickname() + " MODE " + channel->getName() + " +l " + params[2] + "\r\n");
         }
         else if (sign == '-')
         {
             channel->setUserLimit(0);
 
-            server->sendToClient(client, "User limit removed for channel " + channel->getName() + ".\r\n");
+            server->sendToClient(client, ":" + client->getNickname() + " MODE " + channel->getName() + " -l\r\n");
         }
     }
     else if (modeChar == 'o')
@@ -78,32 +79,38 @@ static void handleModeChange(Server *server, Client *client, Channel *channel, c
         {
             if (params.size() != 3)
             {
-                server->sendToClient(client, "ERROR :Missing nickname for operator mode change.\r\n");
+                server->sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "MODE") + "\r\n");
+                return;
             }
 
             Client *target = server->getClientByNick(params[2]);
 
             if (!target)
             {
-                server->sendToClient(client, "ERROR :No such user: " + params[2] + "\r\n");
+                server->sendToClient(client, ERR_NOSUCHNICK(client->getNickname(), params[2]) + "\r\n");
                 return;
             }
 
             if (!channel->isMember(target))
             {
-                server->sendToClient(client, "ERROR :User " + params[2] + " is not a member of channel: " + channel->getName() + "\r\n");
+                server->sendToClient(client, ERR_USERNOTINCHANNEL(client->getNickname(), params[2], channel->getName()) + "\r\n");
                 return;
             }
 
             channel->addOperator(target);
 
-            server->sendToClient(client, "User " + params[2] + " is now an operator of channel " + channel->getName() + ".\r\n");
+            std::string msg = ":" + client->getNickname() + " MODE " + channel->getName() + " +o " + target->getNickname() + "\r\n";
+
+            for (size_t i = 0; i < channel->memberCount(); i++)
+            {
+                server->sendToClient(channel->getMembers()[i], msg);
+            }
         }
         else if (sign == '-')
         {
             if (params.size() != 3)
             {
-                server->sendToClient(client, "ERROR :Missing nickname for operator mode change.\r\n");
+                server->sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "MODE") + "\r\n");
                 return;
             }
 
@@ -111,20 +118,29 @@ static void handleModeChange(Server *server, Client *client, Channel *channel, c
 
             if (!target)
             {
-                server->sendToClient(client, "ERROR :No such user: " + params[2] + "\r\n");
+                server->sendToClient(client, ERR_NOSUCHNICK(client->getNickname(), params[2]) + "\r\n");
                 return;
             }
 
             if (!channel->isMember(target))
             {
-                server->sendToClient(client, "ERROR :User " + params[2] + " is not a member of channel: " + channel->getName() + "\r\n");
+                server->sendToClient(client, ERR_USERNOTINCHANNEL(client->getNickname(), params[2], channel->getName()) + "\r\n");
                 return;
             }
 
             channel->removeOperator(target);
 
-            server->sendToClient(client, "User " + params[2] + " is no longer an operator of channel " + channel->getName() + ".\r\n");
+            std::string msg = ":" + client->getNickname() + " MODE " + channel->getName() + " -o " + target->getNickname() + "\r\n";
+
+            for (size_t i = 0; i < channel->memberCount(); i++)
+            {
+                server->sendToClient(channel->getMembers()[i], msg);
+            }
         }
+    }
+    else
+    {
+        server->sendToClient(client, ERR_UNKNOWNMODE(client->getNickname(), mode) + "\r\n");
     }
 }
 
@@ -132,41 +148,41 @@ void Server::modeCommand(Client *client, const std::vector<std::string> &params)
 {
     if (!client->isRegistered())
     {
-        sendToClient(client, "ERROR :You must be registered to use the MODE command\r\n");
+        sendToClient(client, ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
         return;
     }
     if (params.size() < 2)
     {
-        sendToClient(client, "ERROR :Invalid number of parameters for MODE command\r\n");
+        sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "MODE") + "\r\n");
         return;
     }
     std::string target = params[0];
     if (target[0] != '#')
     {
-        sendToClient(client, "ERROR :Invalid channel name. Channel names must start with '#'.\r\n");
+        sendToClient(client, ERR_NOSUCHCHANNEL(client->getNickname(), target) + "\r\n");
         return;
     }
 
     Channel *channel = getChannel(target);
     if (!channel)
     {
-        sendToClient(client, "ERROR :No such channel: " + target + "\r\n");
+        sendToClient(client, ERR_NOSUCHCHANNEL(client->getNickname(), target) + "\r\n");
         return;
     }
     if (!channel->isMember(client))
     {
-        sendToClient(client, "ERROR :You are not a member of channel: " + target + "\r\n");
+        sendToClient(client, ERR_NOTONCHANNEL(client->getNickname(), client->getNickname()) + "\r\n");
         return;
     }
     if (!channel->isOperator(client))
     {
-        sendToClient(client, "ERROR :You must be an operator to change modes for channel: " + target + "\r\n");
+        sendToClient(client, ERR_CHANOPRIVSNEEDED(client->getNickname(), target) + "\r\n");
         return;
     }
     std::string mode = params[1];
     if (mode[0] != '+' && mode[0] != '-')
     {
-        sendToClient(client, "ERROR :Invalid mode format. Mode must start with '+' or '-'.\r\n");
+        sendToClient(client, ERR_UNKNOWNMODE(client->getNickname(), mode) + "\r\n");
         return;
     }
     handleModeChange(this, client, channel, mode, params);
