@@ -22,14 +22,13 @@ static bool isValidNickname(const std::string &nick)
 
 static void checkRegistration(Client *client)
 {
-    if (client->isRegistered())
-        return;
-        
+
     if (client->hasPassed() && !client->getNickname().empty() && !client->getUsername().empty())
     {
         client->setRegistered(true);
-        std::string welcomeMsg = "Welcome to the IRC server, " + client->getNickname() + "!\r\n";
-        send(client->getFd(), welcomeMsg.c_str(), welcomeMsg.size(), 0);}
+        std::string welcomeMsg = RPL_WELCOME(client->getNickname(), client->getUsername(), client->getHostname()) + "\r\n";
+        send(client->getFd(), welcomeMsg.c_str(), welcomeMsg.size(), 0);
+    }
 }
 
 #include <sys/socket.h>
@@ -38,31 +37,30 @@ void Server::passCommand(Client *client, const std::vector<std::string> &params)
 {
     if (params.size() != 1)
     {
-        sendToClient(client, "ERROR :Invalid number of parameters for PASS command\r\n");
+        sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "PASS") + "\r\n");
         return;
     }
 
     if (client->hasPassed())
     {
-        sendToClient(client, "ERROR :Password already accepted\r\n");
+        sendToClient(client, ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
         return;
     }
 
     if (client->isRegistered())
     {
-        sendToClient(client, "ERROR :You are already registered\r\n");
+        sendToClient(client, ERR_ALREADYREGISTRED(client->getNickname()) + "\r\n");
         return;
     }
 
     if (params[0] != this->password)
     {
-        sendToClient(client, "ERROR :Incorrect password\r\n");
+        sendToClient(client, ERR_PASSWDMISMATCH(client->getNickname()) + "\r\n");
         return;
     }
 
     client->setPassAccepted(true);
 
-    sendToClient(client, ":ircserv NOTICE * :Password accepted\r\n");
 
     checkRegistration(client);
 }
@@ -71,13 +69,13 @@ void Server::nickCommand(Client *client, const std::vector<std::string> &params)
 {
     if (params.size() != 1)
     {
-        sendToClient(client, "ERROR :Invalid number of parameters for NICK command\r\n");
+        sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "NICK") + "\r\n");
         return;
     }
 
     if (!client->hasPassed())
     {
-        sendToClient(client, "ERROR :You must enter the password first\r\n");
+        sendToClient(client, ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
         return;
     }
 
@@ -85,7 +83,7 @@ void Server::nickCommand(Client *client, const std::vector<std::string> &params)
 
     if (!isValidNickname(nickname))
     {
-        sendToClient(client, "ERROR :Invalid nickname\r\n");
+        sendToClient(client, ERR_ERRONEUSNICKNAME(client->getNickname(), nickname) + "\r\n");
         return;
     }
 
@@ -93,26 +91,13 @@ void Server::nickCommand(Client *client, const std::vector<std::string> &params)
 
     if (existing && existing != client)
     {
-        sendToClient(client, "ERROR :Nickname is already in use\r\n");
+        sendToClient(client,ERR_NICKNAMEINUSE(client->getNickname(), nickname) + "\r\n");
         return;
     }
 
-    // if (getClientByNick(nickname) != NULL)
-    // {
-    //     sendToClient(client, "ERROR :Nickname is already in use\r\n");
-    //     return;
-    // }
-
     client->setNickname(nickname);
 
-    std::cout
-    << "fd=" << client->getFd()
-    << " now has nickname ["
-    << client->getNickname()
-    << "]"
-    << std::endl;
 
-    sendToClient(client, ":ircserv NOTICE * :Nickname accepted\r\n");
     checkRegistration(client);
 }
 
@@ -120,28 +105,28 @@ void Server::userCommand(Client *client, const std::vector<std::string> &params)
 {
     if (params.size() != 4)
     {
-        sendToClient(client, "ERROR :Invalid number of parameters for USER command\r\n");
+        sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "USER") + "\r\n");
         return;
     }
     if (!client->hasPassed())
     {
-        sendToClient(client, "ERROR :You must enter the password first\r\n");
+        sendToClient(client, ERR_NOTREGISTERED(client->getNickname()) + "\r\n");
         return;
     }
     if (!client->getUsername().empty())
     {
-        sendToClient(client, "ERROR :You must set a nickname first\r\n");
+        sendToClient(client, ERR_ALREADYREGISTRED(client->getNickname()) + "\r\n");
         return;
     }
     std::string username = params[0];
     if (username.empty())
     {
-        sendToClient(client, "ERROR :Username cannot be empty\r\n");
+        sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "USER") + "\r\n");
         return;
     }
     client->setUsername(username);
+    client->setHostname(params[1]);
     client->setRealname(params[3]);
     client->setRegistered(true);
-    sendToClient(client, ":ircserv NOTICE * :User registration successful\r\n");
     checkRegistration(client);
 }
