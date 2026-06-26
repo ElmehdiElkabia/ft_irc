@@ -350,3 +350,13 @@ void Server::sendToClient(
 		 message.size(),
 		 0);
 }
+
+void    Server::setBot( const Bot &bot )
+{
+	_bot = bot;
+}
+
+const Bot    &Server::getBot( void ) const
+{
+	return (_bot);
+}

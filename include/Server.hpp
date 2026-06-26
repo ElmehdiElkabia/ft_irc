@@ -3,6 +3,7 @@
 
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Bot.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -48,6 +49,10 @@ private:
     std::map<std::string, Channel *> channels;
     std::string password;
 
+    // bot
+    Bot         _bot;
+
+
 public:
     Server();
     ~Server();
@@ -87,6 +92,10 @@ public:
     void inviteCommand(Client *client, const std::vector<std::string> &params);
     void kickCommand(Client *client, const std::vector<std::string> &params);
     void modeCommand(Client *client, const std::vector<std::string> &params);
+
+    // bot
+    void            setBot( const Bot &bot );
+    const Bot       &getBot( void ) const;
 
     void sendToClient(Client *client, const std::string &message);
 };
