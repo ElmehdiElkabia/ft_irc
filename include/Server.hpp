@@ -94,8 +94,12 @@ public:
     void modeCommand(Client *client, const std::vector<std::string> &params);
 
     // bot
-    void            setBot( const Bot &bot );
-    const Bot       &getBot( void ) const;
+    void                setBot( const Bot &bot );
+    const Bot           &getBot( void ) const;
+    int                 clientSize( void ) const;
+    int                 channelSize( void ) const;
+    const std::string   clientsName( void ) const;    
+    const std::string   channelsName( void ) const;    
 
     void sendToClient(Client *client, const std::string &message);
 };

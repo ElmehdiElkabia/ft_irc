@@ -42,9 +42,9 @@ void Server::privmsgCommand(Client *client, const std::vector<std::string> &para
         if ( target == _bot.getName() )
         {
             _bot.handleMessage( *this, *client, message );
+            return ;
         }
-
-        if (!targetClient)
+        else if (!targetClient)
         {
             sendToClient(client, "ERROR :No such user: " + target + "\r\n");
             return;
