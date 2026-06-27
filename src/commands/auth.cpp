@@ -29,7 +29,7 @@ static void checkRegistration(Client *client)
     {
         client->setRegistered(true);
 
-        std::string welcomeMsg = RPL_WELCOME(client->getNickname(), client->getUsername(), client->getHostname()) + "\r\n";
+        std::string welcomeMsg = RPL_WELCOME(client->getNickname(), client->getPrefix()) + "\r\n";
 
         send(client->getFd(), welcomeMsg.c_str(), welcomeMsg.size(), 0);
     }

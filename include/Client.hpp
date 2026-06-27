@@ -32,9 +32,11 @@ class Client
         const std::string& getNickname() const;
         const std::string& getUsername() const;
         std::string getHostname() const;
+        std::string getPrefix() const;
 
         bool isRegistered() const;
         bool hasPassed() const;
+
 
         void setNickname(const std::string& nick);
         void setUsername(const std::string& user);

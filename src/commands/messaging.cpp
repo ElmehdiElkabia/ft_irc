@@ -12,8 +12,17 @@ void Server::privmsgCommand(Client *client, const std::vector<std::string> &para
         sendToClient(client, ERR_NEEDMOREPARAMS(client->getNickname(), "PRIVMSG") + "\r\n");
         return;
     }
-    std::string target = params[0];
+    std::string target  = params[0];
     std::string message = params[1];
+
+    if (message.empty())
+    {
+        sendToClient(client, ERR_NOTEXTTOSEND(client->getNickname()) + "\r\n");
+        return;
+    }
+
+    std::string prefix = ":" + client->getPrefix(); // nick!user@host
+
     if (target[0] == '#')
     {
         Channel *channel = getChannel(target);
@@ -24,15 +33,14 @@ void Server::privmsgCommand(Client *client, const std::vector<std::string> &para
         }
         if (!channel->isMember(client))
         {
-            sendToClient(client, ERR_NOTONCHANNEL(client->getNickname(), target) + "\r\n");
+            sendToClient(client, ERR_CANNOTSENDTOCHAN(client->getNickname(), target) + "\r\n");
             return;
         }
         for (size_t i = 0; i < channel->memberCount(); ++i)
         {
             Client *member = channel->getMembers()[i];
-
             if (member != client)
-                sendToClient(member, ":" + client->getNickname() + " PRIVMSG " + target + " :" + message + "\r\n");
+                sendToClient(member, prefix + " PRIVMSG " + target + " :" + message + "\r\n");
         }
     }
     else
@@ -43,6 +51,6 @@ void Server::privmsgCommand(Client *client, const std::vector<std::string> &para
             sendToClient(client, ERR_NOSUCHNICK(client->getNickname(), target) + "\r\n");
             return;
         }
-        sendToClient(targetClient, ":" + client->getNickname() + " PRIVMSG " + target + " :" + message + "\r\n");
+        sendToClient(targetClient, prefix + " PRIVMSG " + target + " :" + message + "\r\n");
     }
 }

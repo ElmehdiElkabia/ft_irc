@@ -1,17 +1,14 @@
 #include "../include/Client.hpp"
 
-
-Client::Client() :
-    fd(-1),
-    passAccepted(false),
-    registered(false)
+Client::Client() : fd(-1),
+                   passAccepted(false),
+                   registered(false)
 {
 }
 
-Client::Client(int fd) :
-    fd(fd),
-    passAccepted(false),
-    registered(false)
+Client::Client(int fd) : fd(fd),
+                         passAccepted(false),
+                         registered(false)
 {
 }
 
@@ -29,28 +26,32 @@ std::string Client::getHostname() const
     return hostname;
 }
 
-
-const std::string& Client::getNickname() const
+const std::string &Client::getNickname() const
 {
     return nickname;
 }
 
-const std::string& Client::getUsername() const
+const std::string &Client::getUsername() const
 {
     return username;
 }
 
-void Client::setNickname(const std::string& nick)
+std::string Client::getPrefix() const
+{
+    return nickname + "!" + username + "@" + IPadd;
+}
+
+void Client::setNickname(const std::string &nick)
 {
     nickname = nick;
 }
 
-void Client::setUsername(const std::string& user)
+void Client::setUsername(const std::string &user)
 {
     username = user;
 }
 
-void Client::setRealname(const std::string& real)
+void Client::setRealname(const std::string &real)
 {
     realname = real;
 }

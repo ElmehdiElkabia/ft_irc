@@ -1,7 +1,7 @@
 #ifndef REPLIES_HPP
 #define REPLIES_HPP
 
-#define RPL_WELCOME(nick, user, host) ":ft_irc 001 " + nick + " :Welcome to the Internet Relay Network " + nick + "!" + user + "@" + host
+#define RPL_WELCOME(nick, prefix) ":ft_irc 001 " + nick + " :Welcome to the Internet Relay Network " + prefix
 
 #define RPL_NOTOPIC(nick, channel) ":ft_irc 331 " + nick + " " + channel + " :No topic is set"
 
@@ -16,6 +16,8 @@
 #define ERR_NORECIPIENT(nick, command) ":ft_irc 411 " + nick + " :No recipient given (" + command + ")"
 
 #define ERR_NOTEXTTOSEND(nick) ":ft_irc 412 " + nick + " :No text to send"
+
+#define ERR_CANNOTSENDTOCHAN(nick, channel) ":ft_irc 404 " + nick + " " + channel + " :Cannot send to channel"
 
 #define ERR_NONICKNAMEGIVEN(nick) ":ft_irc 431 " + nick + " :No nickname given"
 
