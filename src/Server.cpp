@@ -308,19 +308,11 @@ Server::~Server()
 
 Client *Server::getClientByNick(const std::string &nick)
 {
-	std::cout << "Searching for [" << nick << "]\n";
 
 	for (std::map<int, Client *>::iterator it = clients.begin();
 		 it != clients.end();
 		 ++it)
 	{
-		std::cout
-			<< "fd="
-			<< it->first
-			<< " nick=["
-			<< it->second->getNickname()
-			<< "]"
-			<< std::endl;
 
 		if (it->second->getNickname() == nick)
 			return it->second;
@@ -378,22 +370,22 @@ void Server::sendToClient(Client *client, const std::string &message)
 		 0);
 }
 
-void    Server::setBot( const Bot &bot )
+void Server::setBot(const Bot &bot)
 {
 	_bot = bot;
 }
 
-const Bot    &Server::getBot( void ) const
+const Bot &Server::getBot(void) const
 {
 	return (_bot);
 }
 
-int       Server::clientSize( void ) const
+int Server::clientSize(void) const
 {
-	int										_size = 0;
-	std::map<int, Client *>::const_iterator	it = clients.begin();
+	int _size = 0;
+	std::map<int, Client *>::const_iterator it = clients.begin();
 
-	while ( it != clients.end() )
+	while (it != clients.end())
 	{
 		_size++;
 		it++;
@@ -402,12 +394,12 @@ int       Server::clientSize( void ) const
 	return (_size);
 }
 
-int       Server::channelSize( void ) const
+int Server::channelSize(void) const
 {
-	int													_size = 0;
-	std::map<std::string, Channel *>::const_iterator	it = channels.begin();
+	int _size = 0;
+	std::map<std::string, Channel *>::const_iterator it = channels.begin();
 
-	while ( it != channels.end() )
+	while (it != channels.end())
 	{
 		_size++;
 		it++;
@@ -416,13 +408,13 @@ int       Server::channelSize( void ) const
 	return (_size);
 }
 
-const std::string   Server::clientsName( void ) const
+const std::string Server::clientsName(void) const
 {
-	std::string								names;
-	std::map<int, Client *>::const_iterator	it = clients.begin();
+	std::string names;
+	std::map<int, Client *>::const_iterator it = clients.begin();
 
-	Client	client;
-	while ( it != clients.end() )
+	Client client;
+	while (it != clients.end())
 	{
 		names += it->second->getNickname();
 		names += "\n";
@@ -432,10 +424,10 @@ const std::string   Server::clientsName( void ) const
 	return (names);
 }
 
-const std::string   Server::channelsName( void ) const
+const std::string Server::channelsName(void) const
 {
-	std::string											channel_names;
-	std::map<std::string, Channel *>::const_iterator	it = channels.begin();
+	std::string channel_names;
+	std::map<std::string, Channel *>::const_iterator it = channels.begin();
 
 	// std::cout << "===== MAP ORDER =====" << std::endl;
 
@@ -446,7 +438,7 @@ const std::string   Server::channelsName( void ) const
 
 	// std::cout << "=====================" << std::endl;
 
-	while ( it != channels.end() )
+	while (it != channels.end())
 	{
 		channel_names += it->first;
 		channel_names += "\n";
