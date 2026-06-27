@@ -3,7 +3,6 @@ CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 
 SRCS = src/Server.cpp src/Client.cpp src/Parser.cpp src/Channel.cpp src/main.cpp \
 		src/commands/auth.cpp  src/commands/channel.cpp src/commands/messaging.cpp  src/commands/operator.cpp src/commands/mode.cpp src/Bot.cpp
-# SRCS = $(shell cd src && ls | grep .cpp && cd commands && ls |  grep .cpp)
 
 OBJS = $(SRCS:.cpp=.o)
 
