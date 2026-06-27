@@ -372,5 +372,86 @@ void Server::addClient(Client *client)
 
 void Server::sendToClient(Client *client, const std::string &message)
 {
-	send(client->getFd(), message.c_str(), message.size(), 0);
+	send(client->getFd(),
+		 message.c_str(),
+		 message.size(),
+		 0);
+}
+
+void    Server::setBot( const Bot &bot )
+{
+	_bot = bot;
+}
+
+const Bot    &Server::getBot( void ) const
+{
+	return (_bot);
+}
+
+int       Server::clientSize( void ) const
+{
+	int										_size = 0;
+	std::map<int, Client *>::const_iterator	it = clients.begin();
+
+	while ( it != clients.end() )
+	{
+		_size++;
+		it++;
+	}
+
+	return (_size);
+}
+
+int       Server::channelSize( void ) const
+{
+	int													_size = 0;
+	std::map<std::string, Channel *>::const_iterator	it = channels.begin();
+
+	while ( it != channels.end() )
+	{
+		_size++;
+		it++;
+	}
+
+	return (_size);
+}
+
+const std::string   Server::clientsName( void ) const
+{
+	std::string								names;
+	std::map<int, Client *>::const_iterator	it = clients.begin();
+
+	Client	client;
+	while ( it != clients.end() )
+	{
+		names += it->second->getNickname();
+		names += "\n";
+		it++;
+	}
+
+	return (names);
+}
+
+const std::string   Server::channelsName( void ) const
+{
+	std::string											channel_names;
+	std::map<std::string, Channel *>::const_iterator	it = channels.begin();
+
+	// std::cout << "===== MAP ORDER =====" << std::endl;
+
+	// for (std::map<std::string, Channel*>::const_iterator it = channels.begin(); it != channels.end(); ++it)
+	// {
+	//     std::cout << "[" << it->first << "]" << std::endl;
+	// }
+
+	// std::cout << "=====================" << std::endl;
+
+	while ( it != channels.end() )
+	{
+		channel_names += it->first;
+		channel_names += "\n";
+		it++;
+	}
+
+	return (channel_names);
 }

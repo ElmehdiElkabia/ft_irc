@@ -2,7 +2,8 @@ CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -g3
 
 SRCS = src/Server.cpp src/Client.cpp src/Parser.cpp src/Channel.cpp src/main.cpp \
-		src/commands/auth.cpp  src/commands/channel.cpp src/commands/messaging.cpp  src/commands/operator.cpp src/commands/mode.cpp
+		src/commands/auth.cpp  src/commands/channel.cpp src/commands/messaging.cpp  src/commands/operator.cpp src/commands/mode.cpp src/Bot.cpp
+# SRCS = $(shell cd src && ls | grep .cpp && cd commands && ls |  grep .cpp)
 
 OBJS = $(SRCS:.cpp=.o)
 
@@ -11,10 +12,10 @@ NAME = ircserv
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	@$(CXX) $(CXXFLAGS) -o $@ $^
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(OBJS)

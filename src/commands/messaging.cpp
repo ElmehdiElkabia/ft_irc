@@ -46,7 +46,13 @@ void Server::privmsgCommand(Client *client, const std::vector<std::string> &para
     else
     {
         Client *targetClient = getClientByNick(target);
-        if (!targetClient)
+
+        if ( target == _bot.getName() )
+        {
+            _bot.handleMessage( *this, *client, message );
+            return ;
+        }
+        else if (!targetClient)
         {
             sendToClient(client, ERR_NOSUCHNICK(client->getNickname(), target) + "\r\n");
             return;
