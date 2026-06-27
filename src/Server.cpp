@@ -410,14 +410,14 @@ const std::string   Server::channelsName( void ) const
 	std::string											channel_names;
 	std::map<std::string, Channel *>::const_iterator	it = channels.begin();
 
-	std::cout << "===== MAP ORDER =====" << std::endl;
+	// std::cout << "===== MAP ORDER =====" << std::endl;
 
-	for (std::map<std::string, Channel*>::const_iterator it = channels.begin(); it != channels.end(); ++it)
-	{
-	    std::cout << "[" << it->first << "]" << std::endl;
-	}
+	// for (std::map<std::string, Channel*>::const_iterator it = channels.begin(); it != channels.end(); ++it)
+	// {
+	//     std::cout << "[" << it->first << "]" << std::endl;
+	// }
 
-	std::cout << "=====================" << std::endl;
+	// std::cout << "=====================" << std::endl;
 
 	while ( it != channels.end() )
 	{
